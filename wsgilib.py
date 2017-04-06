@@ -199,7 +199,7 @@ class Headers():
                 yield ('Access-Control-Allow-Origin', str(origin))
 
             if methods:
-                methods = ', '.join([m.upper() for m in methods])
+                methods = ', '.join(m.upper() for m in methods)
                 yield ('Access-Control-Allow-Methods', methods)
 
         # Optional fields
