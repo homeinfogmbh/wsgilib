@@ -6,7 +6,7 @@ from json import dumps
 from hashlib import sha256
 
 from strflib import latin2utf
-from .log import LoggingClass
+from fancylog import LoggingClass
 from .mime import mimetype
 
 __all__ = [
