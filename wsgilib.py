@@ -7,7 +7,7 @@ from hashlib import sha256
 
 from strflib import latin2utf
 from fancylog import LoggingClass
-from .mime import mimetype
+from mimeutil import mimetype
 
 __all__ = [
     'HTTP_STATUS',
