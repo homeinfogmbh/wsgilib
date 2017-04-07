@@ -6,6 +6,6 @@ setup(
     name='wsgilib',
     version='latest',
     author='Richard Neumann',
-    py_modules=['strflib'],
+    py_modules=['wsgilib'],
     license=open('LICENSE').read(),
     description='A simple (U)WSGI framework')
