@@ -7,20 +7,19 @@ A simple (U)WSGI framework.
 ### Simple WSGI application
 A simple WSGI application may be implemented using the `RequestHandler` and a `WsgiApp` using it.
 
-The following example shows a trivial WSGI application that will return the UTF-8 String ''"Hello world!"'' on any HTTP *GET* request.
+The following example shows a trivial WSGI application that will return the UTF-8 String *"Hello world!"* on any HTTP *GET* request.
 
-<pre>
-from wsgilib import WsgiApp, RequestHandler
-
-
-class MyHandler(RequestHandler):
-
-    def get(self):
-        return OK('Hello world!')
+    from wsgilib import WsgiApp, RequestHandler
 
 
-application = WsgiApp(MyHandler)
-</pre>
+    class MyHandler(RequestHandler):
+
+        def get(self):
+	    return OK('Hello world!')
+
+
+    application = WsgiApp(MyHandler)
+
 
 ### ReST Application
 For applications using **Re**presentational **S**tate **T**ransfer the library provides the classes `RestApp` and `ResourceHandler` to handle the respective resources.
