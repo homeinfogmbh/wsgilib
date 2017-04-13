@@ -255,7 +255,17 @@ class Response(Exception, WsgiResponse):
             charset=charset, cors=cors)
 
 
-class Error(Response):
+class PlainText(Response):
+    """Returns a successful plain text response"""
+
+    def __init__(self, msg=None, status=200, charset='utf-8', cors=None):
+        """Returns a plain text success response"""
+        super().__init__(
+            msg=msg, status=status, content_type='text/plain',
+            charset=charset, encoding=True, cors=cors)
+
+
+class Error(PlainText):
     """An WSGI error message"""
 
     def __init__(self, msg=None, status=400, charset='utf-8', cors=None):
@@ -266,16 +276,6 @@ class Error(Response):
                 charset=charset, encoding=True, cors=cors)
         else:
             raise ValueError('Not an error status: {}'.format(status))
-
-
-class PlainText(Response):
-    """Returns a successful plain text response"""
-
-    def __init__(self, msg=None, status=200, charset='utf-8', cors=None):
-        """Returns a plain text success response"""
-        super().__init__(
-            msg=msg, status=status, content_type='text/plain',
-            charset=charset, encoding=True, cors=cors)
 
 
 class OK(PlainText):
@@ -313,14 +313,13 @@ class XML(Response):
 class JSON(Response):
     """A JSON response"""
 
-    def __init__(self, d, status=200, charset='utf-8', cors=None, indent=None):
+    def __init__(self, d, status=200, cors=None, indent=None):
         """Initializes raiseable WSGI response with
         the given dictionary d as JSON response
         """
         super().__init__(
             msg=dumps(d, indent=indent), status=status,
-            content_type='application/json', charset=charset,
-            encoding=True, cors=cors)
+            content_type='application/json', encoding=True, cors=cors)
 
 
 class Binary(Response):
