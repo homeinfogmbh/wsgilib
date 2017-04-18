@@ -9,7 +9,7 @@ A simple WSGI application may be implemented using the `RequestHandler` and a `W
 
 The following example shows a trivial WSGI application that will return the UTF-8 String *"Hello world!"* on any HTTP *GET* request.
 
-    from wsgilib import WsgiApp, RequestHandler
+    from wsgilib import OK, RequestHandler, WsgiApp
 
 
     class MyHandler(RequestHandler):
@@ -25,7 +25,7 @@ The following example shows a trivial WSGI application that will return the UTF-
 For applications using **Re**presentational **S**tate **T**ransfer the library provides the classes `RestApp` and `ResourceHandler` to handle the respective resources.
 
     from math import factorial
-    from wsgilib import RestApp, ResourceHandler
+    from wsgilib import Error, OK, ResourceHandler, RestApp
 
 
     class MyHandler(ResourceHandler):
