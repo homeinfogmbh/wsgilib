@@ -15,7 +15,7 @@ The following example shows a trivial WSGI application that will return the UTF-
     class MyHandler(RequestHandler):
 
         def get(self):
-	    return OK('Hello world!')
+            return OK('Hello world!')
 
 
     application = WsgiApp(MyHandler)
