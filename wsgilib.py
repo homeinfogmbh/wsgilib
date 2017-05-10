@@ -495,8 +495,8 @@ class RequestHandler(LoggingClass):
 class WsgiApp(LoggingClass):
     """Abstract WSGI application"""
 
-    def __init__(self, request_handler, interpolate=False,
-                 cors=None, debug=False, logger=None, log_level=None):
+    def __init__(self, request_handler, interpolate=False, cors=None,
+                 logger=None, debug=False, log_level=None):
         """Sets CORS flags and logger"""
         super().__init__(logger=logger, debug=debug, level=log_level)
         self.request_handler = request_handler
@@ -553,12 +553,12 @@ class RestApp(WsgiApp):
 
     PATHSEP = '/'
 
-    def __init__(self, handlers, interpolate=False,
-                 cors=None, debug=False, logger=None):
+    def __init__(self, handlers, interpolate=False, cors=None,
+                 logger=None, debug=False, log_level=None):
         """Sets the root path for this web application"""
         super().__init__(
-            None, interpolate=interpolate,
-            cors=cors, debug=debug, logger=logger)
+            None, interpolate=interpolate, cors=cors, logger=logger,
+            debug=debug, log_level=log_level)
         self.handlers = handlers
 
     @property
