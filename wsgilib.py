@@ -496,9 +496,9 @@ class WsgiApp(LoggingClass):
     """Abstract WSGI application"""
 
     def __init__(self, request_handler, interpolate=False,
-                 cors=None, debug=False, logger=None):
+                 cors=None, debug=False, logger=None, log_level=None):
         """Sets CORS flags and logger"""
-        super().__init__(logger=logger, debug=debug)
+        super().__init__(logger=logger, debug=debug, level=log_level)
         self.request_handler = request_handler
         self.interpolate = interpolate
         self.cors = cors
