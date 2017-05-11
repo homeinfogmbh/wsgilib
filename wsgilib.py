@@ -287,8 +287,7 @@ class Error(PlainText):
         """Returns a plain text error response"""
         if 400 <= status < 600:
             super().__init__(
-                msg=msg, status=status, content_type='text/plain',
-                charset=charset, encoding=True, cors=cors)
+                msg=msg, status=status, charset=charset, cors=cors)
         else:
             raise ValueError('Not an error status: {}'.format(status))
 
