@@ -577,6 +577,7 @@ class RestApp(WsgiApp):
 
         while revpath:
             node = revpath.pop()
+            handled_path.append(node)
 
             try:
                 handler = handler[node]
@@ -587,7 +588,6 @@ class RestApp(WsgiApp):
                 revpath.append(node)
                 break
             else:
-                handled_path.append(node)
                 self.logger.debug('{} → {}'.format(node, handler))
 
         if revpath:
