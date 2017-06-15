@@ -492,6 +492,11 @@ class RequestHandler(LoggingClass):
     def _brew(self):
         raise Error(status=418) from None
 
+    def lograise(self, message):
+        """Logs the message as an error and raises it as a WSGI error"""
+        self.logger.error(message)
+        raise Error(message) from None
+
 
 class WsgiApp(LoggingClass):
     """Abstract WSGI application"""
