@@ -568,11 +568,9 @@ class CachedTextHandler(ResourceHandler):
             try:
                 self._text = self.data.decode()
             except AttributeError:
-                raise Error('No data provided.') from None
+                self.lograise('No data provided.')
             except UnicodeDecodeError:
-                error = 'Non-unicode data received.'
-                self.logger.error(error)
-                raise Error(error) from None
+                self.lograise('Non-unicode data received.')
 
         return self._text
 
@@ -591,9 +589,7 @@ class CachedJSONHandler(CachedTextHandler):
             try:
                 self._json = loads(self.text)
             except ValueError:
-                error = 'Non-JSON text received.'
-                self.logger.error(error)
-                raise Error(error) from None
+                self.lograise('Non-JSON text received.')
 
         return self._json
 
