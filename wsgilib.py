@@ -15,14 +15,14 @@
 #  along with this program. If not, see <http://www.gnu.org/licenses/>.
 """Simple (U)WSGI framework for web applications"""
 
-from traceback import format_exc
 from contextlib import suppress
-from json import dumps
 from hashlib import sha256
+from json import dumps, loads
+from traceback import format_exc
 
-from strflib import latin2utf
 from fancylog import LoggingClass
 from mimeutil import mimetype
+from strflib import latin2utf
 
 __all__ = [
     'HTTP_STATUS',
@@ -42,6 +42,8 @@ __all__ = [
     'RequestHandler',
     'WsgiApp',
     'ResourceHandler',
+    'CachedTextHandler',
+    'CachedJSONHandler',
     'RestApp']
 
 
@@ -545,6 +547,50 @@ class ResourceHandler(RequestHandler):
         """Invokes the super constructor and sets resource"""
         super().__init__(environ, interpolate=interpolate, logger=logger)
         self.resource = resource
+
+
+class CachedTextHandler(ResourceHandler):
+    """Caches POSTed text"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._text = None
+
+    @property
+    def text(self):
+        """Returns the posted text"""
+        if self._text is None:
+            try:
+                self._text = self.data.decode()
+            except AttributeError:
+                raise Error('No data provided.') from None
+            except UnicodeDecodeError:
+                error = 'Non-unicode data received.'
+                self.logger.error(error)
+                raise Error(error) from None
+
+        return self._text
+
+
+class CachedJSONHandler(CachedTextHandler):
+    """Caches POSTed JSON data"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._json = None
+
+    @property
+    def json(self):
+        """Returns the appropriate JSON dictionary"""
+        if self._json is None:
+            try:
+                self._json = loads(self.text)
+            except ValueError:
+                error = 'Non-JSON text received.'
+                self.logger.error(error)
+                raise Error(error) from None
+
+        return self._json
 
 
 class RestApp(WsgiApp):
