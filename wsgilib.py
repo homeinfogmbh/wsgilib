@@ -17,7 +17,7 @@
 
 from contextlib import suppress
 from hashlib import sha256
-from json import dumps, loads
+from json import dumps
 from traceback import format_exc
 
 from fancylog import LoggingClass
@@ -42,8 +42,6 @@ __all__ = [
     'RequestHandler',
     'WsgiApp',
     'ResourceHandler',
-    'CachedTextHandler',
-    'CachedJSONHandler',
     'RestApp']
 
 
@@ -492,10 +490,10 @@ class RequestHandler(LoggingClass):
     def _brew(self):
         raise Error(status=418) from None
 
-    def lograise(self, message):
+    def logerr(self, message, status=400):
         """Logs the message as an error and raises it as a WSGI error"""
         self.logger.error(message)
-        raise Error(message) from None
+        return Error(message, status=status)
 
 
 class WsgiApp(LoggingClass):
@@ -552,46 +550,6 @@ class ResourceHandler(RequestHandler):
         """Invokes the super constructor and sets resource"""
         super().__init__(environ, interpolate=interpolate, logger=logger)
         self.resource = resource
-
-
-class CachedTextHandler(ResourceHandler):
-    """Caches POSTed text"""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._text = None
-
-    @property
-    def text(self):
-        """Returns the posted text"""
-        if self._text is None:
-            try:
-                self._text = self.data.decode()
-            except AttributeError:
-                self.lograise('No data provided.')
-            except UnicodeDecodeError:
-                self.lograise('Non-unicode data received.')
-
-        return self._text
-
-
-class CachedJSONHandler(CachedTextHandler):
-    """Caches POSTed JSON data"""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._json = None
-
-    @property
-    def json(self):
-        """Returns the appropriate JSON dictionary"""
-        if self._json is None:
-            try:
-                self._json = loads(self.text)
-            except ValueError:
-                self.lograise('Non-JSON text received.')
-
-        return self._json
 
 
 class RestApp(WsgiApp):
