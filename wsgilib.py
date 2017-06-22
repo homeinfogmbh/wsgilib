@@ -15,10 +15,10 @@
 #  along with this program. If not, see <http://www.gnu.org/licenses/>.
 """Simple (U)WSGI framework for web applications"""
 
-from contextlib import suppress
 from hashlib import sha256
 from json import dumps
 from traceback import format_exc
+from urllib import parse
 
 from fancylog import LoggingClass
 from mimeutil import mimetype
@@ -137,7 +137,7 @@ HTTP_STATUS = {
     510: HTTPStatus(510, 'Not Extended')}
 
 
-def query2dict(query, interpolate=False):
+def query2dict(query, unquote=True):
     """Converts a query string into a dictionary"""
 
     result = {}
@@ -156,9 +156,8 @@ def query2dict(query, interpolate=False):
                     else:
                         value = '='.join(fragments[1:])
 
-                        if interpolate:
-                            with suppress(Exception):
-                                value = eval(value, {}, {})
+                        if unquote:
+                            value = parse.unquote(value)
 
                     result[param] = value
 
@@ -236,10 +235,7 @@ class WsgiResponse():
             content_length = None
 
         self.headers = Headers(
-            content_type,
-            content_length,
-            charset=charset,
-            cors=cors,
+            content_type, content_length, charset=charset, cors=cors,
             fields=fields)
         self.response_body = response_body
 
@@ -370,11 +366,11 @@ class InternalServerError(Error):
 class RequestHandler(LoggingClass):
     """Request handling wrapper for WsgiApps"""
 
-    def __init__(self, environ, interpolate=False, logger=None):
+    def __init__(self, environ, unquote=True, logger=None):
         super().__init__(logger=logger)
         self.environ = environ
         self.cors = cors
-        self.query = query2dict(self.query_string, interpolate=interpolate)
+        self.query = query2dict(self.query_string, unquote=unquote)
         self._data_cache = None
 
     def __call__(self):
@@ -499,12 +495,12 @@ class RequestHandler(LoggingClass):
 class WsgiApp(LoggingClass):
     """Abstract WSGI application"""
 
-    def __init__(self, request_handler, interpolate=False, cors=None,
+    def __init__(self, request_handler, unquote=True, cors=None,
                  logger=None, debug=False, log_level=None):
         """Sets CORS flags and logger"""
         super().__init__(logger=logger, debug=debug, level=log_level)
         self.request_handler = request_handler
-        self.interpolate = interpolate
+        self.unquote = unquote
         self.cors = cors
 
     def __call__(self, environ, start_response):
@@ -528,7 +524,7 @@ class WsgiApp(LoggingClass):
         """Returns the approriate WSGI response"""
         try:
             request_handler = self.request_handler(
-                environ, interpolate=self.interpolate, logger=self.logger)
+                environ, unquote=self.unquote, logger=self.logger)
             return cors(request_handler(), self.cors)
         except Response as response:
             return cors(response, self.cors)
@@ -546,9 +542,9 @@ class ResourceHandler(RequestHandler):
 
     HANDLERS = None
 
-    def __init__(self, resource, environ, interpolate=False, logger=None):
+    def __init__(self, resource, environ, unquote=True, logger=None):
         """Invokes the super constructor and sets resource"""
-        super().__init__(environ, interpolate=interpolate, logger=logger)
+        super().__init__(environ, unquote=unquote, logger=logger)
         self.resource = resource
 
 
@@ -557,12 +553,12 @@ class RestApp(WsgiApp):
 
     PATHSEP = '/'
 
-    def __init__(self, handlers, interpolate=False, cors=None,
+    def __init__(self, handlers, unquote=True, cors=None,
                  logger=None, debug=False, log_level=None):
         """Sets the root path for this web application"""
         super().__init__(
-            None, interpolate=interpolate, cors=cors, logger=logger,
-            debug=debug, log_level=log_level)
+            None, unquote=unquote, cors=cors, logger=logger, debug=debug,
+            log_level=log_level)
         self.handlers = handlers
 
     @property
@@ -612,7 +608,7 @@ class RestApp(WsgiApp):
             raise Error('Not a ReST handler: {}'.format(
                 self.PATHSEP.join(handled_path)), status=400)
 
-    def _resource_handler(self, environ, interpolate=False, logger=None):
+    def _resource_handler(self, environ, unquote=True, logger=None):
         """Returns the appropriate resource handler"""
         try:
             path = latin2utf(environ['PATH_INFO'])
@@ -622,6 +618,4 @@ class RestApp(WsgiApp):
             path = [i for i in reversed(path.split(self.PATHSEP)) if i]
 
         handler, resource = self._resolve_path(path)
-        return handler(
-            resource, environ, interpolate=interpolate,
-            logger=self.logger)
+        return handler(resource, environ, unquote=unquote, logger=self.logger)
