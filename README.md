@@ -75,7 +75,7 @@ To return binary data, the class `Binary` uses the library [mimeutil](https://gi
 ### Internal server errors
 For debugging purposes or to detect runtime errors within a productive system, the class `InternalServerError` can be used.
 
-# Dependencies
+## Dependencies
 * [fancylog](https://github.com/HOMEINFO/fancylog)
 * [mimeutil](https://github.com/HOMEINFO/mimeutil)
 * [strflib](https://github.com/HOMEINFO/strflib)
