@@ -25,6 +25,7 @@ from mimeutil import mimetype
 from strflib import latin2utf
 
 __all__ = [
+    'escape_html',
     'HTTP_STATUS',
     'query2dict',
     'cors',
@@ -60,28 +61,23 @@ HTML_ENTITY_MAP = {
     'ß': '&#szlig;'}
 
 
-def escape_html(text):
+def escape_html(obj):
     """Escapes HTML code withtin the provided string"""
 
-    for char in HTML_ENTITY_MAP:
-        text = text.replace(char, HTML_ENTITY_MAP[char])
+    typ = type(obj)
 
-    return text
+    if typ is str:
+        for char in HTML_ENTITY_MAP:
+            obj = obj.replace(char, HTML_ENTITY_MAP[char])
 
+        return obj
+    elif typ is list:
+        return [escape_html(item) for item in obj]
+    elif typ is dict:
+        for key in obj:
+            obj[key] = escape_html(obj[key])
 
-def escape_html_dict(dictionary):
-    """Escapes HTML within the respective dictionary"""
-
-    for key in dictionary:
-        value = dictionary[key]
-        typ = type(value)
-
-        if typ is string:
-            dictionary[key] = escape_html(value)
-        elif typ is dict:
-            dictionary[key] = escape_html_dict(value)
-
-    return dictionary
+    return obj
 
 
 class HTTPStatus():
@@ -368,7 +364,7 @@ class JSON(Response):
         the given dictionary d as JSON response
         """
         if escape_html:
-            d = escape_html_dict(d)
+            d = escape_html(d)
 
         super().__init__(
             msg=dumps(d, indent=indent), status=status,
