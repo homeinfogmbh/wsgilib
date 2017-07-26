@@ -45,20 +45,7 @@ __all__ = [
     'ResourceHandler',
     'RestApp']
 
-HTML_ENTITY_MAP = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-    '/': '&#x2F;',
-    'ä': '&auml;',
-    'ö': '&ouml;',
-    'ü': '&uuml;',
-    'Ä': '&Auml;',
-    'Ö': '&Ouml;',
-    'Ü': '&Uuml;',
-    'ß': '&szlig;'}
+HTML_ENTITY_MAP = {'<': '&lt;', '>': '&gt;'}
 
 
 def escape_html(obj):
