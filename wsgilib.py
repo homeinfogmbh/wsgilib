@@ -69,6 +69,21 @@ def escape_html(text):
     return text
 
 
+def escape_html_dict(dictionary):
+    """Escapes HTML within the respective dictionary"""
+
+    for key in dictionary:
+        value = dictionary[key]
+        typ = type(value)
+
+        if typ is string:
+            dictionary[key] = escape_html(value)
+        elif typ is dict:
+            dictionary[key] = escape_html_dict(value)
+
+    return dictionary
+
+
 class HTTPStatus():
     """HTTP status codes"""
 
@@ -353,17 +368,7 @@ class JSON(Response):
         the given dictionary d as JSON response
         """
         if escape_html:
-            print('ESCAPING HTML...')
-
-            for key in d:
-                value = d[key]
-
-                if type(value) is str:
-                    escaped_value = escape_html(value)
-                    d[key] = escaped_value
-                    print('Escaped "{}" to "{}".'.format(value, escaped_value))
-                else:
-                    print('Type is:', type(value))
+            d = escape_html_dict(d)
 
         super().__init__(
             msg=dumps(d, indent=indent), status=status,
