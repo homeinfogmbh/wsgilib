@@ -48,14 +48,14 @@ __all__ = [
 HTML_ENTITY_MAP = {'<': '&lt;', '>': '&gt;'}
 
 
-def escape_html(obj):
+def escape_html(obj, entity_map=HTML_ENTITY_MAP):
     """Escapes HTML code withtin the provided string"""
 
     typ = type(obj)
 
     if typ is str:
-        for char in HTML_ENTITY_MAP:
-            obj = obj.replace(char, HTML_ENTITY_MAP[char])
+        for char in entity_map:
+            obj = obj.replace(char, entity_map[char])
 
         return obj
     elif typ is list:
