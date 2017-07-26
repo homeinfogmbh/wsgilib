@@ -353,11 +353,17 @@ class JSON(Response):
         the given dictionary d as JSON response
         """
         if escape_html:
+            print('ESCAPING HTML...')
+
             for key in d:
                 value = d[key]
 
-                if (type(value) == str):
-                    d[key] = escape_html(value)
+                if type(value) is str:
+                    escaped_value = escape_html(value)
+                    d[key] = escaped_value
+                    print('Escaped "{}" to "{}".'.format(value, escaped_value))
+                else:
+                    print('Type is:', type(value))
 
         super().__init__(
             msg=dumps(d, indent=indent), status=status,
