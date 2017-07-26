@@ -16,6 +16,7 @@
 """Simple (U)WSGI framework for web applications"""
 
 from hashlib import sha256
+from html import escape
 from json import dumps
 from traceback import format_exc
 from urllib import parse
@@ -25,7 +26,7 @@ from mimeutil import mimetype
 from strflib import latin2utf
 
 __all__ = [
-    'escape_html',
+    'escape_object',
     'HTTP_STATUS',
     'query2dict',
     'cors',
@@ -48,21 +49,18 @@ __all__ = [
 HTML_ENTITY_MAP = {'<': '&lt;', '>': '&gt;'}
 
 
-def escape_html(obj, entity_map=HTML_ENTITY_MAP):
-    """Escapes HTML code withtin the provided string"""
+def escape_object(obj):
+    """Escapes HTML code withtin the provided object"""
 
     typ = type(obj)
 
     if typ is str:
-        for char in entity_map:
-            obj = obj.replace(char, entity_map[char])
-
-        return obj
+        return escape(obj)
     elif typ is list:
-        return [escape_html(item) for item in obj]
+        return [escape_object(item) for item in obj]
     elif typ is dict:
         for key in obj:
-            obj[key] = escape_html(obj[key])
+            obj[key] = escape_object(obj[key])
 
     return obj
 
@@ -350,7 +348,7 @@ class JSON(Response):
         the given dictionary d as JSON response
         """
         if escape:
-            d = escape_html(d)
+            d = escape_object(d)
 
         super().__init__(
             msg=dumps(d, indent=indent), status=status,
