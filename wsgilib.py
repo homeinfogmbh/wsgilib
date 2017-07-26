@@ -53,12 +53,12 @@ HTML_ENTITY_MAP = {
     "'": '&#39;',
     '/': '&#x2F;',
     'ä': '&auml;',
-    'ö': '&#ouml;',
-    'ü': '&#uuml;',
-    'Ä': '&#Auml;',
-    'Ö': '&#Ouml;',
-    'Ü': '&#Uuml;',
-    'ß': '&#szlig;'}
+    'ö': '&ouml;',
+    'ü': '&uuml;',
+    'Ä': '&Auml;',
+    'Ö': '&Ouml;',
+    'Ü': '&Uuml;',
+    'ß': '&szlig;'}
 
 
 def escape_html(obj):
