@@ -44,6 +44,30 @@ __all__ = [
     'ResourceHandler',
     'RestApp']
 
+HTML_ENTITY_MAP = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '/': '&#x2F;',
+  'ä': '&auml;',
+  'ö': '&#ouml;',
+  'ü': '&#uuml;',
+  'Ä': '&#Auml;',
+  'Ö': '&#Ouml;',
+  'Ü': '&#Uuml;',
+  'ß': '&#szlig;'}
+
+
+def escape_html(text):
+    """Escapes HTML code withtin the provided string"""
+
+    for char in HTML_ENTITY_MAP:
+        text = text.replace(char, HTML_ENTITY_MAP[char])
+
+    return text
+
 
 class HTTPStatus():
     """HTTP status codes"""
@@ -323,10 +347,18 @@ class XML(Response):
 class JSON(Response):
     """A JSON response"""
 
-    def __init__(self, d, status=200, cors=None, indent=None):
+    def __init__(self, d, escape_html=True, status=200, cors=None,
+                 indent=None):
         """Initializes raiseable WSGI response with
         the given dictionary d as JSON response
         """
+        if escape_html:
+            for key in d:
+                value = d[key]
+
+                if (type(value) == str):
+                    d[key] = escape_html(value)
+
         super().__init__(
             msg=dumps(d, indent=indent), status=status,
             content_type='application/json', encoding=True, cors=cors)
