@@ -358,12 +358,11 @@ class XML(Response):
 class JSON(Response):
     """A JSON response"""
 
-    def __init__(self, d, escape_html=True, status=200, cors=None,
-                 indent=None):
+    def __init__(self, d, escape=True, status=200, cors=None, indent=None):
         """Initializes raiseable WSGI response with
         the given dictionary d as JSON response
         """
-        if escape_html:
+        if escape:
             d = escape_html(d)
 
         super().__init__(
