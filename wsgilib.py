@@ -430,7 +430,19 @@ class RequestHandler(LoggingClass):
         self.environ = environ
         self.cors = cors
         self.query = query2dict(self.query_string, unquote=unquote)
-        self._data_cache = None
+        self._data_cache = False
+        self.methods = {
+            'GET': self.get,
+            'POST': self.post,
+            'PUT': self.put,
+            'PATCH': self.patch,
+            'DELETE': self.delete,
+            'OPTIONS': self.options,
+            'HEAD': self.head,
+            'TRACE': self.trace,
+            'PROPFIND': self.propfind,
+            'COPY': self.copy,
+            'MOVE': self.move}
 
     def __call__(self):
         """Call respective method and catch any exception
@@ -449,20 +461,16 @@ class RequestHandler(LoggingClass):
     @property
     def data(self):
         """Returns the data sent over HTTP"""
-        if self._data_cache is None:
+        if self._data_cache is False:
             try:
                 self._data_cache = self.environ['wsgi.input'].read()
             except KeyError:
-                self._data_cache = False
-                return None
+                self._data_cache = None
             except MemoryError:
-                raise Error('File too large', status=507) from None
-            else:
-                return self._data_cache
-        elif self._data_cache is False:
-            return None
-        else:
-            return self._data_cache
+                self._data_cache = None
+                raise Error('File too large.', status=507) from None
+
+        return self._data_cache
 
     @property
     def request_method(self):
@@ -478,23 +486,6 @@ class RequestHandler(LoggingClass):
     def query_string(self):
         """Returns the query string"""
         return self.environ.get('QUERY_STRING')
-
-    @property
-    def methods(self):
-        """Returns the available HTTP methods"""
-        return {
-            'GET': self.get,
-            'POST': self.post,
-            'PUT': self.put,
-            'PATCH': self.patch,
-            'DELETE': self.delete,
-            'OPTIONS': self.options,
-            'HEAD': self.head,
-            'TRACE': self.trace,
-            'PROPFIND': self.propfind,
-            'COPY': self.copy,
-            'MOVE': self.move,
-            'BREW': self._brew}
 
     @property
     def method(self):
@@ -542,9 +533,6 @@ class RequestHandler(LoggingClass):
     def move(self):
         raise NotImplementedError()
 
-    def _brew(self):
-        raise Error(status=418) from None
-
     def logerr(self, message, status=400):
         """Logs the message as an error and raises it as a WSGI error"""
         self.logger.error(message)
@@ -564,16 +552,7 @@ class WsgiApp(LoggingClass):
 
     def __call__(self, environ, start_response):
         """Handles a WSGI query"""
-        if self.debug:
-            self.logger.debug('Environ:', environ)
-
         status, response_headers, response_body = self._run(environ)
-
-        if self.debug:
-            self.logger.debug('Status:', status)
-            self.logger.debug('Headers:', response_headers)
-            self.logger.debug('Body:', response_body)
-
         start_response(status, response_headers)
 
         if response_body is not None:
