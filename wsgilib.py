@@ -74,10 +74,9 @@ def is_handler(obj):
         return False
 
 
-def split_handler_and_resource(self, revpath, pathsep='/'):
-    """Resolves the path into the respective resource and handler"""
+def get_handler_and_resource(handler, revpath, pathsep='/'):
+    """Splits the path into the respective handler and resource"""
 
-    handler = self.handlers
     handled_path = []
 
     while revpath:
@@ -100,20 +99,6 @@ def split_handler_and_resource(self, revpath, pathsep='/'):
     else:
         raise Error('Not a ReST handler: {}.'.format(
             pathsep.join(handled_path)), status=400)
-
-
-def resource_handler(environ, unquote=True, logger=None, pathsep='/'):
-    """Returns the appropriate resource handler"""
-
-    try:
-        path = latin2utf(environ['PATH_INFO'])
-    except KeyError:
-        path = []
-    else:
-        path = [i for i in reversed(path.split(pathsep)) if i]
-
-    handler, resource = split_handler_and_resource(path, pathsep=pathsep)
-    return handler(resource, environ, unquote=unquote, logger=logger)
 
 
 class HTTPStatus():
@@ -631,6 +616,19 @@ class RestApp(WsgiApp):
                  logger=None, debug=False, log_level=None):
         """Sets the root path for this web application"""
         super().__init__(
-            resource_handler, unquote=unquote, cors=cors, logger=logger,
+            self.resource_handler, unquote=unquote, cors=cors, logger=logger,
             debug=debug, log_level=log_level)
         self.handlers = handlers
+
+    def resource_handler(self, environ, unquote=True, logger=None):
+        """Returns the appropriate resource handler"""
+        try:
+            path = latin2utf(environ['PATH_INFO'])
+        except KeyError:
+            revpath = []
+        else:
+            revpath = [i for i in reversed(path.split(self.PATHSEP)) if i]
+
+        handler, resource = get_handler_and_resource(
+            self.handlers, revpath, pathsep=self.PATHSEP)
+        return handler(resource, environ, unquote=unquote, logger=logger)
