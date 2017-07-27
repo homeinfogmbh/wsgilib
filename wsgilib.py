@@ -65,6 +65,57 @@ def escape_object(obj):
     return obj
 
 
+def is_handler(obj):
+    """Checks if the respective object implements ResourceHandler"""
+
+    try:
+        return issubclass(obj, ResourceHandler)
+    except TypeError:
+        return False
+
+
+def split_handler_and_resource(self, revpath, pathsep='/'):
+    """Resolves the path into the respective resource and handler"""
+
+    handler = self.handlers
+    handled_path = []
+
+    while revpath:
+        node = revpath.pop()
+        handled_path.append(node)
+
+        try:
+            handler = handler[node]
+        except (KeyError, TypeError):
+            revpath.append(node)
+            break
+
+    if revpath:
+        resource = pathsep.join(reversed(revpath))
+    else:
+        resource = None
+
+    if is_handler(handler):
+        return (handler, resource)
+    else:
+        raise Error('Not a ReST handler: {}.'.format(
+            pathsep.join(handled_path)), status=400)
+
+
+def resource_handler(environ, unquote=True, logger=None, pathsep='/'):
+    """Returns the appropriate resource handler"""
+
+    try:
+        path = latin2utf(environ['PATH_INFO'])
+    except KeyError:
+        path = []
+    else:
+        path = [i for i in reversed(path.split(pathsep)) if i]
+
+    handler, resource = split_handler_and_resource(path, pathsep=pathsep)
+    return handler(resource, environ, unquote=unquote, logger=logger)
+
+
 class HTTPStatus():
     """HTTP status codes"""
 
@@ -580,65 +631,6 @@ class RestApp(WsgiApp):
                  logger=None, debug=False, log_level=None):
         """Sets the root path for this web application"""
         super().__init__(
-            None, unquote=unquote, cors=cors, logger=logger, debug=debug,
-            log_level=log_level)
+            resource_handler, unquote=unquote, cors=cors, logger=logger,
+            debug=debug, log_level=log_level)
         self.handlers = handlers
-
-    @property
-    def request_handler(self):
-        """Override getter of request handler"""
-        return self._resource_handler
-
-    @request_handler.setter
-    def request_handler(self, _):
-        """Override setter of request handler"""
-        pass
-
-    def _resolve_path(self, revpath):
-        """Resolves the path into the respective resource and handler"""
-        handler = self.handlers
-        handled_path = []
-
-        while revpath:
-            node = revpath.pop()
-            handled_path.append(node)
-
-            try:
-                handler = handler[node]
-            except (KeyError, TypeError):
-                self.logger.debug(
-                    'Handler {} does not have sub-handler {}'.format(
-                        handler, node))
-                revpath.append(node)
-                break
-            else:
-                self.logger.debug('{} → {}'.format(node, handler))
-
-        if revpath:
-            resource = self.PATHSEP.join(reversed(revpath))
-        else:
-            resource = None
-
-        # Check if handler implements ResourceHandler
-        try:
-            is_handler = issubclass(handler, ResourceHandler)
-        except TypeError:
-            is_handler = False
-
-        if is_handler:
-            return (handler, resource)
-        else:
-            raise Error('Not a ReST handler: {}'.format(
-                self.PATHSEP.join(handled_path)), status=400)
-
-    def _resource_handler(self, environ, unquote=True, logger=None):
-        """Returns the appropriate resource handler"""
-        try:
-            path = latin2utf(environ['PATH_INFO'])
-        except KeyError:
-            path = []
-        else:
-            path = [i for i in reversed(path.split(self.PATHSEP)) if i]
-
-        handler, resource = self._resolve_path(path)
-        return handler(resource, environ, unquote=unquote, logger=self.logger)
