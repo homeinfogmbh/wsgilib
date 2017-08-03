@@ -79,3 +79,4 @@ For debugging purposes or to detect runtime errors within a productive system, t
 * [fancylog](https://github.com/HOMEINFO/fancylog)
 * [mimeutil](https://github.com/HOMEINFO/mimeutil)
 * [strflib](https://github.com/HOMEINFO/strflib)
+* [xmldom](https://github.com/HOMEINFO/xmldom)
