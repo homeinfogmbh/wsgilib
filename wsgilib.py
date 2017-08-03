@@ -24,6 +24,7 @@ from urllib import parse
 from fancylog import LoggingClass
 from mimeutil import mimetype
 from strflib import latin2utf
+from xmldom import DisabledValidation
 
 __all__ = [
     'escape_object',
@@ -369,11 +370,17 @@ class HTML(Response):
 class XML(Response):
     """An XML response"""
 
-    def __init__(self, dom, status=200, charset='utf-8', cors=None):
+    def __init__(self, dom, validate=True, status=200, charset='utf-8',
+                 cors=None):
+        if validate:
+            xml_text = dom.toxml(encoding=charset)
+        else:
+            with DisabledValidation():
+                xml_text = dom.toxml(encoding=charset)
+
         super().__init__(
-            msg=dom.toxml(encoding=charset), status=status,
-            content_type='application/xml', charset=charset,
-            encoding=None, cors=cors)
+            msg=xml_text, status=status, content_type='application/xml',
+            charset=charset, encoding=None, cors=cors)
 
 
 class JSON(Response):
