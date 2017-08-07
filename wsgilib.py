@@ -90,10 +90,8 @@ def strip_json(dict_or_list):
 
                 if stripped:
                     result.append(stripped)
-            elif value is None:
-                continue
             else:
-                result.append(value)
+                result.append(element)
     else:
         raise ValueError('Object must be dict or list.')
 
