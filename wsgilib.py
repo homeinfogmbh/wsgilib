@@ -72,7 +72,7 @@ def strip_json(dict_or_list):
         for key in dict_or_list:
             value = dict_or_list[key]
 
-            if type(value) in (dict, list):
+            if isinstance(value, (dict, list)):
                 stripped = strip_json(value)
 
                 if stripped:
@@ -85,7 +85,7 @@ def strip_json(dict_or_list):
         result = []
 
         for element in dict_or_list:
-            if type(element) in (dict, list):
+            if isinstance(element, (dict, list)):
                 stripped = strip_json(element)
 
                 if stripped:
