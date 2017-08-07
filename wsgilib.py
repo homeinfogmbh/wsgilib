@@ -64,7 +64,7 @@ def escape_object(obj):
 
 
 def strip_json(dict_or_list):
-    """Strips the empry data from JSON-like objects"""
+    """Strips empty data from JSON-like objects"""
 
     if isinstance(dict_or_list, dict):
         result = {}
