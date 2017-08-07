@@ -28,6 +28,7 @@ from xmldom import DisabledValidation
 
 __all__ = [
     'escape_object',
+    'strip_json',
     'HTTP_STATUS',
     'query2dict',
     'cors',
@@ -53,17 +54,52 @@ HTML_ENTITY_MAP = {'<': '&lt;', '>': '&gt;'}
 def escape_object(obj):
     """Escapes HTML code withtin the provided object"""
 
-    typ = type(obj)
-
-    if typ is str:
+    if isinstance(obj, str):
         return escape(obj)
-    elif typ is list:
+    elif isinstance(obj, list):
         return [escape_object(item) for item in obj]
-    elif typ is dict:
+    elif isinstance(obj, dict):
         for key in obj:
             obj[key] = escape_object(obj[key])
 
     return obj
+
+
+def strip_json(dict_or_list):
+    """Strips the empry data from JSON-like objects"""
+
+    if isinstance(dict_or_list, dict):
+        result = {}
+
+        for key in dict_or_list:
+            value = dict_or_list[key]
+
+            if type(value) in (dict, list):
+                stripped = strip_json(value)
+
+                if stripped:
+                    result[key] = stripped
+            elif value is None:
+                continue
+            else:
+                result[key] = value
+    elif isinstance(dict_or_list, list):
+        result = []
+
+        for element in dict_or_list:
+            if type(element) in (dict, list):
+                stripped = strip_json(element)
+
+                if stripped:
+                    result.append(stripped)
+            elif value is None:
+                continue
+            else:
+                result.append(value)
+    else:
+        raise ValueError('Object must be dict or list.')
+
+    return result
 
 
 def is_handler(obj):
@@ -386,10 +422,14 @@ class XML(Response):
 class JSON(Response):
     """A JSON response"""
 
-    def __init__(self, d, escape=True, status=200, cors=None, indent=None):
+    def __init__(self, d, strip=True, escape=True, status=200, cors=None,
+                 indent=None):
         """Initializes raiseable WSGI response with
         the given dictionary d as JSON response
         """
+        if strip:
+            d = strip_json(d)
+
         if escape:
             d = escape_object(d)
 
