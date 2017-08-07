@@ -48,8 +48,6 @@ __all__ = [
     'ResourceHandler',
     'RestApp']
 
-HTML_ENTITY_MAP = {'<': '&lt;', '>': '&gt;'}
-
 
 def escape_object(obj):
     """Escapes HTML code withtin the provided object"""
