@@ -487,7 +487,7 @@ class RequestHandler(LoggingClass):
             'MOVE': self.move}
 
         if testable:
-            self.methods['PROBE']: self.__probe
+            self.methods['PROBE'] = self.__probe
 
     def __call__(self):
         """Call respective method and catch any exception
