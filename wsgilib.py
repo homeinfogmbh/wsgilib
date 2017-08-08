@@ -471,7 +471,6 @@ class RequestHandler(LoggingClass):
     def __init__(self, environ, unquote=True, logger=None, testable=False):
         super().__init__(logger=logger)
         self.environ = environ
-        self.testable = testable
         self.query = query2dict(self.query_string, unquote=unquote)
         self._data_cache = False
         self.methods = {
@@ -485,8 +484,10 @@ class RequestHandler(LoggingClass):
             'TRACE': self.trace,
             'PROPFIND': self.propfind,
             'COPY': self.copy,
-            'MOVE': self.move,
-            'PROBE': self.__probe}
+            'MOVE': self.move}
+
+        if testable:
+            self.methods['PROBE']: self.__probe
 
     def __call__(self):
         """Call respective method and catch any exception
@@ -579,10 +580,7 @@ class RequestHandler(LoggingClass):
 
     def __probe(self):
         """Tests whether the WSGI app is running"""
-        if self.testable:
-            return OK('running')
-
-        raise NotImplementedError()
+        return OK('running')
 
     def logerr(self, message, status=400):
         """Logs the message as an error and raises it as a WSGI error"""
