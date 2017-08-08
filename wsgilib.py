@@ -468,10 +468,10 @@ class InternalServerError(Error):
 class RequestHandler(LoggingClass):
     """Request handling wrapper for WsgiApps"""
 
-    def __init__(self, environ, unquote=True, logger=None):
+    def __init__(self, environ, unquote=True, logger=None, testable=False):
         super().__init__(logger=logger)
         self.environ = environ
-        self.cors = cors
+        self.testable = testable
         self.query = query2dict(self.query_string, unquote=unquote)
         self._data_cache = False
         self.methods = {
@@ -485,7 +485,8 @@ class RequestHandler(LoggingClass):
             'TRACE': self.trace,
             'PROPFIND': self.propfind,
             'COPY': self.copy,
-            'MOVE': self.move}
+            'MOVE': self.move,
+            'PROBE': self.__probe}
 
     def __call__(self):
         """Call respective method and catch any exception
@@ -576,6 +577,13 @@ class RequestHandler(LoggingClass):
     def move(self):
         raise NotImplementedError()
 
+    def __probe(self):
+        """Tests whether the WSGI app is running"""
+        if self.testable:
+            return OK('running')
+
+        raise NotImplementedError()
+
     def logerr(self, message, status=400):
         """Logs the message as an error and raises it as a WSGI error"""
         self.logger.error(message)
@@ -585,13 +593,14 @@ class RequestHandler(LoggingClass):
 class WsgiApp(LoggingClass):
     """Abstract WSGI application"""
 
-    def __init__(self, request_handler, unquote=True, cors=None,
-                 logger=None, debug=False, log_level=None):
+    def __init__(self, request_handler, unquote=True, cors=None, logger=None,
+                 debug=False, log_level=None, testable=False):
         """Sets CORS flags and logger"""
         super().__init__(logger=logger, debug=debug, level=log_level)
         self.request_handler = request_handler
         self.unquote = unquote
         self.cors = cors
+        self.testable = testable
 
     def __call__(self, environ, start_response):
         """Handles a WSGI query"""
@@ -605,7 +614,8 @@ class WsgiApp(LoggingClass):
         """Returns the approriate WSGI response"""
         try:
             request_handler = self.request_handler(
-                environ, unquote=self.unquote, logger=self.logger)
+                environ, unquote=self.unquote, logger=self.logger,
+                testable=self.testable)
             return cors(request_handler(), self.cors)
         except Response as response:
             return cors(response, self.cors)
@@ -623,9 +633,11 @@ class ResourceHandler(RequestHandler):
 
     HANDLERS = None
 
-    def __init__(self, resource, environ, unquote=True, logger=None):
+    def __init__(self, resource, environ, unquote=True, logger=None,
+                 testable=False):
         """Invokes the super constructor and sets resource"""
-        super().__init__(environ, unquote=unquote, logger=logger)
+        super().__init__(
+            environ, unquote=unquote, logger=logger, testable=testable)
         self.resource = resource
 
 
@@ -634,15 +646,16 @@ class RestApp(WsgiApp):
 
     PATHSEP = '/'
 
-    def __init__(self, handlers, unquote=True, cors=None,
-                 logger=None, debug=False, log_level=None):
+    def __init__(self, handlers, unquote=True, cors=None, logger=None,
+                 debug=False, log_level=None, testable=False):
         """Sets the root path for this web application"""
         super().__init__(
             self.resource_handler, unquote=unquote, cors=cors, logger=logger,
-            debug=debug, log_level=log_level)
+            debug=debug, log_level=log_level, testable=testable)
         self.handlers = handlers
 
-    def resource_handler(self, environ, unquote=True, logger=None):
+    def resource_handler(self, environ, unquote=True, logger=None,
+                         testable=False):
         """Returns the appropriate resource handler"""
         try:
             path = latin2utf(environ['PATH_INFO'])
@@ -653,4 +666,5 @@ class RestApp(WsgiApp):
 
         handler, resource = get_handler_and_resource(
             self.handlers, revpath, pathsep=self.PATHSEP)
-        return handler(resource, environ, unquote=unquote, logger=logger)
+        return handler(resource, environ, unquote=unquote, logger=logger,
+                       testable=testable)
