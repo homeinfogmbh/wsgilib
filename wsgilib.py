@@ -304,7 +304,7 @@ class WsgiResponse():
 
     def __iter__(self):
         """Yields properties"""
-        yield '{} {}'.format(self.status)
+        yield '{} {}'.format(*self.status)
         # Headers must be a list at this point
         yield list(self.headers)
         yield self.response_body
