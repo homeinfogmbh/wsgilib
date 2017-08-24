@@ -134,96 +134,70 @@ def get_handler_and_resource(handler, revpath, pathsep='/'):
             pathsep.join(handled_path)), status=400)
 
 
-class HTTPStatus():
-    """HTTP status codes"""
-
-    def __init__(self, code, msg):
-        """Initializes code and message"""
-        self.code = code
-        self.msg = msg
-
-    def __int__(self):
-        """Returns the status code"""
-        return self.code
-
-    def __str__(self):
-        """Returns the message"""
-        return str(self.msg)
-
-    def __repr__(self):
-        """Returns the status code and message"""
-        return '{} {}'.format(self.code, self.msg)
-
-
 # A dictionary of valid HTTP status codes
 HTTP_STATUS = {
-    100: HTTPStatus(100, 'Continue'),
-    101: HTTPStatus(101, 'Switching Protocols'),
-    102: HTTPStatus(102, 'Processing'),
-    200: HTTPStatus(200, 'OK'),
-    201: HTTPStatus(201, 'Created'),
-    202: HTTPStatus(202, 'Accepted'),
-    203: HTTPStatus(203, 'Non-Authoritative Information'),
-    204: HTTPStatus(204, 'No Content'),
-    205: HTTPStatus(205, 'Reset Content'),
-    206: HTTPStatus(206, 'Partial Content'),
-    207: HTTPStatus(207, 'Multi-Status'),
-    208: HTTPStatus(208, 'Already Reported'),
-    226: HTTPStatus(226, 'IM Used'),
-    300: HTTPStatus(300, 'Multiple Choices'),
-    301: HTTPStatus(301, 'Moved Permanently'),
-    302: HTTPStatus(302, 'Found'),
-    303: HTTPStatus(303, 'See Other'),
-    304: HTTPStatus(304, 'Not Modified'),
-    305: HTTPStatus(305, 'Use Proxy'),
-    306: HTTPStatus(306, 'Switch Proxy'),  # Deprecated!
-    307: HTTPStatus(307, 'Temporary Redirect'),
-    308: HTTPStatus(308, 'Permanent Redirect'),
-    400: HTTPStatus(400, 'Bad Request'),
-    401: HTTPStatus(401, 'Unauthorized'),
-    402: HTTPStatus(402, 'Payment Required'),
-    403: HTTPStatus(403, 'Forbidden'),
-    404: HTTPStatus(404, 'Not Found'),
-    405: HTTPStatus(405, 'Method Not Allowed'),
-    406: HTTPStatus(406, 'Not Acceptable'),
-    407: HTTPStatus(407, 'Proxy Authentication Required'),
-    408: HTTPStatus(408, 'Request Time-out'),
-    409: HTTPStatus(409, 'Conflict'),
-    410: HTTPStatus(410, 'Gone'),
-    411: HTTPStatus(411, 'Length Required'),
-    412: HTTPStatus(412, 'Precondition Failed'),
-    413: HTTPStatus(413, 'Request Entity Too Large'),
-    414: HTTPStatus(414, 'Request-URL Too Long'),
-    415: HTTPStatus(415, 'Unsupported Media Type'),
-    416: HTTPStatus(416, 'Requested range not satisfiable'),
-    417: HTTPStatus(417, 'Expectation Failed'),
-    418: HTTPStatus(418, 'I’m a teapot'),
-    420: HTTPStatus(420, 'Policy Not Fulfilled'),
-    421: HTTPStatus(421, 'There are too many connections'
-                    ' from your internet address'),
-    422: HTTPStatus(422, 'Unprocessable Entity'),
-    423: HTTPStatus(423, 'Locked'),
-    424: HTTPStatus(424, 'Failed Dependency'),
-    425: HTTPStatus(425, 'Unordered Collection'),
-    426: HTTPStatus(426, 'Upgrade Required'),
-    428: HTTPStatus(428, 'Precondition Required'),
-    429: HTTPStatus(429, 'Too Many Requests'),
-    431: HTTPStatus(431, 'Request Header Fields Too Large'),
-    444: HTTPStatus(444, 'No Response'),
-    449: HTTPStatus(449, 'The request should be retried after'
-                    ' doing the appropriate action'),
-    451: HTTPStatus(451, 'Unavailable For Legal Reasons'),
-    500: HTTPStatus(500, 'Internal Server Error'),
-    501: HTTPStatus(501, 'Not Implemented'),
-    502: HTTPStatus(502, 'Bad Gateway'),
-    503: HTTPStatus(503, 'Service Unavailable'),
-    504: HTTPStatus(504, 'Gateway Time-out'),
-    505: HTTPStatus(505, 'HTTP Version not supported'),
-    506: HTTPStatus(506, 'Variant Also Negotiates'),
-    507: HTTPStatus(507, 'Insufficient Storage'),
-    508: HTTPStatus(508, 'Loop Detected'),
-    509: HTTPStatus(509, 'Bandwidth Limit Exceeded'),
-    510: HTTPStatus(510, 'Not Extended')}
+    100: 'Continue',
+    101: 'Switching Protocols',
+    102: 'Processing',
+    200: 'OK',
+    201: 'Created',
+    202: 'Accepted',
+    203: 'Non-Authoritative Information',
+    204: 'No Content',
+    205: 'Reset Content',
+    206: 'Partial Content',
+    207: 'Multi-Status',
+    208: 'Already Reported',
+    226: 'IM Used',
+    300: 'Multiple Choices',
+    301: 'Moved Permanently',
+    302: 'Found',
+    303: 'See Other',
+    304: 'Not Modified',
+    305: 'Use Proxy',
+    306: 'Switch Proxy',  # Deprecated!
+    307: 'Temporary Redirect',
+    308: 'Permanent Redirect',
+    400: 'Bad Request',
+    401: 'Unauthorized',
+    402: 'Payment Required',
+    403: 'Forbidden',
+    404: 'Not Found',
+    405: 'Method Not Allowed',
+    406: 'Not Acceptable',
+    407: 'Proxy Authentication Required',
+    408: 'Request Time-out',
+    409: 'Conflict',
+    410: 'Gone',
+    411: 'Length Required',
+    412: 'Precondition Failed',
+    413: 'Request Entity Too Large',
+    414: 'Request-URL Too Long',
+    415: 'Unsupported Media Type',
+    416: 'Requested range not satisfiable',
+    417: 'Expectation Failed',
+    420: 'Policy Not Fulfilled',
+    421: 'Misdirected Request',
+    422: 'Unprocessable Entity',
+    423: 'Locked',
+    424: 'Failed Dependency',
+    426: 'Upgrade Required',
+    428: 'Precondition Required',
+    429: 'Too Many Requests',
+    431: 'Request Header Fields Too Large',
+    451: 'Unavailable For Legal Reasons',
+    500: 'Internal Server Error',
+    501: 'Not Implemented',
+    502: 'Bad Gateway',
+    503: 'Service Unavailable',
+    504: 'Gateway Time-out',
+    505: 'HTTP Version not supported',
+    506: 'Variant Also Negotiates',
+    507: 'Insufficient Storage',
+    508: 'Loop Detected',
+    509: 'Bandwidth Limit Exceeded',
+    510: 'Not Extended',
+    511: 'Network Authentication Required'}
 
 
 def query2dict(query, unquote=True):
@@ -316,7 +290,7 @@ class WsgiResponse():
     def __init__(self, status, content_type=None, response_body=None,
                  charset=None, cors=None, fields=None):
         """Creates a generic WSGI response"""
-        self.status = HTTP_STATUS[status]
+        self.status = (status, HTTP_STATUS[status])
 
         try:
             content_length = len(response_body)
@@ -330,7 +304,7 @@ class WsgiResponse():
 
     def __iter__(self):
         """Yields properties"""
-        yield repr(self.status)
+        yield '{} {}'.format(self.status)
         # Headers must be a list at this point
         yield list(self.headers)
         yield self.response_body
