@@ -522,13 +522,13 @@ class RequestHandler(LoggingClass):
     def get(self):
         raise NotImplementedError()
 
-    def post(self, data):
+    def post(self):
         raise NotImplementedError()
 
-    def put(self, data):
+    def put(self):
         raise NotImplementedError()
 
-    def patch(self, data):
+    def patch(self):
         raise NotImplementedError()
 
     def delete(self):
