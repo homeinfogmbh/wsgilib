@@ -422,10 +422,17 @@ class JSON(Response):
 class Binary(Response):
     """A binary reply."""
 
-    def __init__(self, data, status=200, cors=None, etag=None, headers=None):
+    def __init__(self, data, status=200, cors=None, etag=None, filename=None):
         """Initializes raiseable WSGI response
         with binary data and an optional etag.
         """
+        if filename is not None:
+            headers = {
+                'Content-Disposition': 'attachment; filename="{}"'.format(
+                    filename)}
+        else:
+            headers = None
+
         super().__init__(
             msg=data, status=status, content_type=mimetype(data),
             charset=None, encoding=None, cors=cors, headers=headers)
