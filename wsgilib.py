@@ -298,7 +298,7 @@ class WsgiResponse():
     """A WSGI response."""
 
     def __init__(self, status, content_type=None, response_body=None,
-                 charset=None, cors=None, fields=None):
+                 charset=None, cors=None, headers=None):
         """Creates a generic WSGI response"""
         self.status = (status, HTTP_STATUS[status])
 
@@ -309,7 +309,7 @@ class WsgiResponse():
 
         self.headers = Headers(
             content_type, content_length, charset=charset, cors=cors,
-            fields=fields)
+            fields=headers)
         self.response_body = response_body
 
     def __iter__(self):
@@ -324,7 +324,7 @@ class Response(Exception, WsgiResponse):
     """An WSGI error message."""
 
     def __init__(self, msg=None, status=200, content_type='text/plain',
-                 charset='utf-8', encoding=True, cors=None):
+                 charset='utf-8', encoding=True, cors=None, headers=None):
         """Generates an error WSGI response."""
         if msg is not None:
             if encoding is True:
@@ -336,7 +336,7 @@ class Response(Exception, WsgiResponse):
         Exception.__init__(self, msg)
         WsgiResponse.__init__(
             self, status, content_type=content_type, response_body=msg,
-            charset=charset, cors=cors)
+            charset=charset, cors=cors, headers=headers)
 
 
 class PlainText(Response):
@@ -422,13 +422,13 @@ class JSON(Response):
 class Binary(Response):
     """A binary reply."""
 
-    def __init__(self, data, status=200, cors=None, etag=None):
+    def __init__(self, data, status=200, cors=None, etag=None, headers=None):
         """Initializes raiseable WSGI response
         with binary data and an optional etag.
         """
         super().__init__(
             msg=data, status=status, content_type=mimetype(data),
-            charset=None, encoding=None, cors=cors)
+            charset=None, encoding=None, cors=cors, headers=headers)
 
         if etag is True:
             etag = sha256(data).hexdigest()
