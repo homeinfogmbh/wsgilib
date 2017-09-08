@@ -290,8 +290,7 @@ class Headers():
                 yield ('Access-Control-Allow-Methods', methods)
 
         # Optional fields
-        for field in self.fields:
-            yield (field, self.fields[field])
+        yield from self.fields.items()
 
 
 class WsgiResponse():
