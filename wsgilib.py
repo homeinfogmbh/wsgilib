@@ -13,10 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program. If not, see <http://www.gnu.org/licenses/>.
-"""Simple (U)WSGI framework for web applications"""
+"""Simple (U)WSGI framework for web applications."""
 
 from hashlib import sha256
-from html import escape
+from html import escape as escape_html
 from json import dumps
 from traceback import format_exc
 from urllib import parse
@@ -31,7 +31,7 @@ __all__ = [
     'strip_json',
     'HTTP_STATUS',
     'query2dict',
-    'cors',
+    'set_cors',
     'Headers',
     'WsgiResponse',
     'Response',
@@ -50,10 +50,10 @@ __all__ = [
 
 
 def escape_object(obj):
-    """Escapes HTML code withtin the provided object"""
+    """Escapes HTML code withtin the provided object."""
 
     if isinstance(obj, str):
-        return escape(obj)
+        return escape_html(obj)
     elif isinstance(obj, list):
         return [escape_object(item) for item in obj]
     elif isinstance(obj, dict):
@@ -64,7 +64,7 @@ def escape_object(obj):
 
 
 def strip_json(dict_or_list):
-    """Strips empty data from JSON-like objects"""
+    """Strips empty data from JSON-like objects."""
 
     if isinstance(dict_or_list, dict):
         result = {}
@@ -99,7 +99,7 @@ def strip_json(dict_or_list):
 
 
 def is_handler(obj):
-    """Checks if the respective object implements ResourceHandler"""
+    """Checks if the respective object implements ResourceHandler."""
 
     try:
         return issubclass(obj, ResourceHandler)
@@ -108,7 +108,7 @@ def is_handler(obj):
 
 
 def get_handler_and_resource(handler, revpath, pathsep='/'):
-    """Splits the path into the respective handler and resource"""
+    """Splits the path into the respective handler and resource."""
 
     handled_path = []
 
@@ -200,35 +200,39 @@ HTTP_STATUS = {
     511: 'Network Authentication Required'}
 
 
-def query2dict(query, unquote=True):
-    """Converts a query string into a dictionary"""
+def query_items(query_string, unquote=True, parsep='&', valsep='='):
+    """Yields key-value pairs of the query string."""
 
-    result = {}
+    for parameter in query_string.split(parsep):
+        # Skip empty parameter data
+        if parameter:
+            fragments = parameter.split(valsep)
+            key = fragments[0]
 
-    if query:
-        for param_data in query.split('&'):
-            # Skip empty parameter data
-            if param_data:
-                fragments = param_data.split('=')
-                param = fragments[0]
+            # Skip empty-named parameters
+            if key:
+                if len(fragments) == 1:
+                    value = True
+                else:
+                    value = valsep.join(fragments[1:])
 
-                # Skip empty-named parameters
-                if param:
-                    if len(fragments) == 1:
-                        value = True
-                    else:
-                        value = '='.join(fragments[1:])
+                    if unquote:
+                        value = parse.unquote(value)
 
-                        if unquote:
-                            value = parse.unquote(value)
-
-                    result[param] = value
-
-    return result
+                yield (key, value)
 
 
-def cors(response, cors):
-    """Fixes CORS settings on the respective response"""
+def query2dict(query_string, unquote=True):
+    """Converts a query string into a dictionary."""
+
+    if query_string:
+        return dict(query_items(query_string), unquote=unquote)
+
+    return {}
+
+
+def set_cors(response, cors):
+    """Fixes CORS settings on the respective response."""
 
     if response.headers.cors is None:
         response.headers.cors = cors
@@ -236,12 +240,18 @@ def cors(response, cors):
     return response
 
 
+def probe():
+    """Tests whether the WSGI app is running."""
+
+    return OK('running')
+
+
 class Headers():
-    """Wraps response headers"""
+    """Wraps response headers."""
 
     def __init__(self, content_type=None, content_length=None,
                  charset=None, cors=None, fields=None):
-        """ Generates response headers"""
+        """ Generates response headers."""
         self.content_type = content_type
         self.content_length = content_length
         self.charset = charset
@@ -249,7 +259,7 @@ class Headers():
         self.fields = fields or {}
 
     def __iter__(self):
-        """Yields items"""
+        """Yields header fields."""
         if self.content_type is not None:
             if self.charset is not None:
                 charset = 'charset={}'.format(self.charset)
@@ -285,7 +295,7 @@ class Headers():
 
 
 class WsgiResponse():
-    """A WSGI response"""
+    """A WSGI response."""
 
     def __init__(self, status, content_type=None, response_body=None,
                  charset=None, cors=None, fields=None):
@@ -303,7 +313,7 @@ class WsgiResponse():
         self.response_body = response_body
 
     def __iter__(self):
-        """Yields properties"""
+        """Yields response fields."""
         yield '{} {}'.format(*self.status)
         # Headers must be a list at this point
         yield list(self.headers)
@@ -311,11 +321,11 @@ class WsgiResponse():
 
 
 class Response(Exception, WsgiResponse):
-    """An WSGI error message"""
+    """An WSGI error message."""
 
     def __init__(self, msg=None, status=200, content_type='text/plain',
                  charset='utf-8', encoding=True, cors=None):
-        """Generates an error WSGI response"""
+        """Generates an error WSGI response."""
         if msg is not None:
             if encoding is True:
                 encoding = charset
@@ -330,10 +340,10 @@ class Response(Exception, WsgiResponse):
 
 
 class PlainText(Response):
-    """Returns a successful plain text response"""
+    """Returns a successful plain text response."""
 
     def __init__(self, msg=None, status=200, charset='utf-8', cors=None):
-        """Returns a plain text success response"""
+        """Returns a plain text success response."""
         super().__init__(
             msg=msg, status=status, content_type='text/plain',
             charset=charset, encoding=True, cors=cors)
@@ -343,7 +353,7 @@ class Error(PlainText):
     """An WSGI error message"""
 
     def __init__(self, msg=None, status=400, charset='utf-8', cors=None):
-        """Returns a plain text error response"""
+        """Returns a plain text error response."""
         if 400 <= status < 600:
             super().__init__(
                 msg=msg, status=status, charset=charset, cors=cors)
@@ -352,10 +362,10 @@ class Error(PlainText):
 
 
 class OK(PlainText):
-    """Returns a successful plain text response"""
+    """Returns a successful plain text response."""
 
     def __init__(self, msg=None, status=200, charset='utf-8', cors=None):
-        """Returns a plain text success response"""
+        """Returns a plain text success response."""
         if 200 <= status < 300:
             super().__init__(
                 msg=msg, status=status, charset=charset, cors=cors)
@@ -364,20 +374,21 @@ class OK(PlainText):
 
 
 class HTML(Response):
-    """Returns a successful plain text response"""
+    """Returns a successful plain text response."""
 
     def __init__(self, msg=None, status=200, charset='utf-8', cors=None):
-        """Returns a plain text success response"""
+        """Returns a plain text success response."""
         super().__init__(
             msg=msg, status=status, content_type='text/html',
             charset=charset, encoding=True, cors=cors)
 
 
 class XML(Response):
-    """An XML response"""
+    """An XML response."""
 
     def __init__(self, dom, validate=True, status=200, charset='utf-8',
                  cors=None):
+        """Sets the dom and inherited responde attributes."""
         if validate:
             xml_text = dom.toxml(encoding=charset)
         else:
@@ -390,30 +401,30 @@ class XML(Response):
 
 
 class JSON(Response):
-    """A JSON response"""
+    """A JSON response."""
 
-    def __init__(self, d, strip=True, escape=True, status=200, cors=None,
-                 indent=None):
+    def __init__(self, dictionary, escape=True, strip=False, status=200,
+                 cors=None, indent=None):
         """Initializes raiseable WSGI response with
-        the given dictionary d as JSON response
+        the given dictionary d as JSON response.
         """
         if strip:
-            d = strip_json(d)
+            dictionary = strip_json(dictionary)
 
         if escape:
-            d = escape_object(d)
+            dictionary = escape_object(dictionary)
 
         super().__init__(
-            msg=dumps(d, indent=indent), status=status,
+            msg=dumps(dictionary, indent=indent), status=status,
             content_type='application/json', encoding=True, cors=cors)
 
 
 class Binary(Response):
-    """A binary reply"""
+    """A binary reply."""
 
     def __init__(self, data, status=200, cors=None, etag=None):
         """Initializes raiseable WSGI response
-        with binary data and an optional etag
+        with binary data and an optional etag.
         """
         super().__init__(
             msg=data, status=status, content_type=mimetype(data),
@@ -427,11 +438,11 @@ class Binary(Response):
 
 
 class InternalServerError(Error):
-    """A code-500 WSGI response"""
+    """A code-500 WSGI response."""
 
     def __init__(self, msg=None, charset='utf-8', cors=True):
         """Indicates an internal server error
-        CORS is enabled by default
+        CORS is enabled by default.
         """
         if msg is None:
             msg = 'Internal Server Error'
@@ -440,9 +451,10 @@ class InternalServerError(Error):
 
 
 class RequestHandler(LoggingClass):
-    """Request handling wrapper for WsgiApps"""
+    """Request handling wrapper for WsgiApps."""
 
     def __init__(self, environ, unquote=True, logger=None, testable=False):
+        """Sets the environ and additional configuration parameters."""
         super().__init__(logger=logger)
         self.environ = environ
         self.query = query2dict(self.query_string, unquote=unquote)
@@ -461,13 +473,10 @@ class RequestHandler(LoggingClass):
             'MOVE': self.move}
 
         if testable:
-            self.methods['PROBE'] = self.__probe
+            self.methods['PROBE'] = probe
 
     def __call__(self):
-        """Call respective method and catch any exception
-
-        TODO: Put methods in a dictionary
-        """
+        """Call respective method and catch any exception."""
         try:
             return self.method()
         except KeyError:
@@ -479,7 +488,7 @@ class RequestHandler(LoggingClass):
 
     @property
     def data(self):
-        """Returns the data sent over HTTP"""
+        """Returns the data sent over HTTP."""
         if self._data_cache is False:
             try:
                 self._data_cache = self.environ['wsgi.input'].read()
@@ -493,68 +502,75 @@ class RequestHandler(LoggingClass):
 
     @property
     def request_method(self):
-        """Returns the request method"""
+        """Returns the request method."""
         return self.environ['REQUEST_METHOD']
 
     @property
     def path_info(self):
-        """Returns the URL path"""
+        """Returns the URL path."""
         return latin2utf(self.environ.get('PATH_INFO'))
 
     @property
     def query_string(self):
-        """Returns the query string"""
+        """Returns the query string."""
         return self.environ.get('QUERY_STRING')
 
     @property
     def method(self):
-        """Returns the method to invoke and its respective arguments"""
+        """Returns the method to invoke and its respective arguments."""
         return self.methods[self.request_method]
 
     @property
     def path(self):
-        """Returns a list of elements of the path"""
+        """Returns a list of elements of the path."""
         try:
             return [node for node in self.path_info.split('/') if node]
         except TypeError:
             return []
 
     def get(self):
+        """Processes GET requests."""
         raise NotImplementedError()
 
     def post(self):
+        """Processes POST requests."""
         raise NotImplementedError()
 
     def put(self):
+        """Processes PUT requests."""
         raise NotImplementedError()
 
     def patch(self):
+        """Processes PATCH requests."""
         raise NotImplementedError()
 
     def delete(self):
+        """Processes DELETE requests."""
         raise NotImplementedError()
 
     def options(self):
+        """Processes OPTIONS requests."""
         raise NotImplementedError()
 
     def head(self):
+        """Processes HEAD requests."""
         raise NotImplementedError()
 
     def trace(self):
+        """Processes TRACE requests."""
         raise NotImplementedError()
 
     def propfind(self):
+        """Processes PROPFIND requests."""
         raise NotImplementedError()
 
     def copy(self):
+        """Processes COPY requests."""
         raise NotImplementedError()
 
     def move(self):
+        """Processes MOVE requests."""
         raise NotImplementedError()
-
-    def __probe(self):
-        """Tests whether the WSGI app is running"""
-        return OK('running')
 
     def logerr(self, message, status=400):
         """Logs the message as an error and raises it as a WSGI error"""
@@ -588,16 +604,16 @@ class WsgiApp(LoggingClass):
             request_handler = self.request_handler(
                 environ, unquote=self.unquote, logger=self.logger,
                 testable=self.testable)
-            return cors(request_handler(), self.cors)
+            return set_cors(request_handler(), self.cors)
         except Response as response:
-            return cors(response, self.cors)
+            return set_cors(response, self.cors)
         except Exception:
             if self.debug:
                 msg = format_exc()
                 self.logger.error(msg)
                 return InternalServerError(msg=msg, cors=self.cors)
-            else:
-                return InternalServerError(cors=self.cors)
+
+            return InternalServerError(cors=self.cors)
 
 
 class ResourceHandler(RequestHandler):
