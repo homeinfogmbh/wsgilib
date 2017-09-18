@@ -425,22 +425,57 @@ class Binary(Response):
         """Initializes raiseable WSGI response
         with binary data and an optional etag.
         """
-        if filename is not None:
-            headers = {
-                'Content-Disposition': 'attachment; filename="{}"'.format(
-                    filename)}
-        else:
-            headers = None
-
         super().__init__(
             msg=data, status=status, content_type=mimetype(data),
-            charset=None, encoding=None, cors=cors, headers=headers)
+            charset=None, encoding=None, cors=cors)
+        self.etag = etag
+        self.filename = filename
 
+    @property
+    def etag(self):
+        """Returns the e-tag."""
+        return self.headers.fields.get('ETag')
+
+    @etag.setter
+    def etag(self, etag):
+        """Sets the e-tag."""
         if etag is True:
-            etag = sha256(data).hexdigest()
+            etag = sha256(self.response_body).hexdigest()
 
         if etag:
             self.headers.fields['ETag'] = etag
+
+    @property
+    def content_disposition(self):
+        """Returns the content disposition."""
+        return self.headers.fields['Content-Disposition']
+
+    @content_disposition.setter
+    def content_disposition(self, content_disposition):
+        """Sets the content disposition."""
+        self.headers.fields['Content-Disposition'] = content_disposition
+
+    @property
+    def filename(self):
+        """Returns the file name."""
+        try:
+            _, filename_assignment = self.content_disposition.split('; ')
+        except (AttributeError, ValueError):
+            return None
+
+        try:
+            _, quoted_filename = filename_assignment.split('=')
+        except ValueError:
+            return None
+
+        return quoted_filename.strip('"')
+
+    @filename.setter
+    def filename(self, filename):
+        """Sets the file name."""
+        if filename is not None:
+            content_disposition = 'attachment; filename="{}"'.format(filename)
+            self.content_disposition = content_disposition
 
 
 class InternalServerError(Error):
