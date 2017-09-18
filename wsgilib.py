@@ -459,16 +459,18 @@ class Binary(Response):
     def filename(self):
         """Returns the file name."""
         try:
-            _, filename_assignment = self.content_disposition.split('; ')
+            _, *filename_assignment = self.content_disposition.split('; ')
         except (AttributeError, ValueError):
             return None
 
+        filename_assignment = '; '.join(filename_assignment)
+
         try:
-            _, quoted_filename = filename_assignment.split('=')
+            _, *quoted_filename = filename_assignment.split('=')
         except ValueError:
             return None
 
-        return quoted_filename.strip('"')
+        return '='.join(quoted_filename).strip('"')
 
     @filename.setter
     def filename(self, filename):
