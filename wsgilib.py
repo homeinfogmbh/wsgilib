@@ -428,56 +428,40 @@ class Binary(Response):
         super().__init__(
             msg=data, status=status, content_type=mimetype(data),
             charset=None, encoding=None, cors=cors)
+        self._etag = None
+        self._filename = None
         self.etag = etag
         self.filename = filename
 
     @property
     def etag(self):
         """Returns the e-tag."""
-        return self.headers.fields.get('ETag')
+        return self._filename
 
     @etag.setter
     def etag(self, etag):
         """Sets the e-tag."""
-        if etag is True:
-            etag = sha256(self.response_body).hexdigest()
+        self._etag = etag
 
-        if etag:
+        if etag is not None:
+            if etag is True:
+                etag = sha256(self.response_body).hexdigest()
+
             self.headers.fields['ETag'] = etag
-
-    @property
-    def content_disposition(self):
-        """Returns the content disposition."""
-        return self.headers.fields['Content-Disposition']
-
-    @content_disposition.setter
-    def content_disposition(self, content_disposition):
-        """Sets the content disposition."""
-        self.headers.fields['Content-Disposition'] = content_disposition
 
     @property
     def filename(self):
         """Returns the file name."""
-        try:
-            _, *filename_assignment = self.content_disposition.split('; ')
-        except (AttributeError, ValueError):
-            return None
-
-        filename_assignment = '; '.join(filename_assignment)
-
-        try:
-            _, *quoted_filename = filename_assignment.split('=')
-        except ValueError:
-            return None
-
-        return '='.join(quoted_filename).strip('"')
+        return self._filename
 
     @filename.setter
     def filename(self, filename):
         """Sets the file name."""
+        self._filename = filename
+
         if filename is not None:
             content_disposition = 'attachment; filename="{}"'.format(filename)
-            self.content_disposition = content_disposition
+            self.headers.fields['Content-Disposition'] = content_disposition
 
 
 class InternalServerError(Error):
