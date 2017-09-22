@@ -15,15 +15,18 @@
 #  along with this program. If not, see <http://www.gnu.org/licenses/>.
 """Simple (U)WSGI framework for web applications."""
 
+from contextlib import suppress
+from datetime import datetime, date, time
 from hashlib import sha256
 from html import escape as escape_html
-from json import dumps
+from json import dumps as dumps_, loads as loads_
 from traceback import format_exc
 from urllib import parse
 
 from fancylog import LoggingClass
 from mimeutil import mimetype
 from strflib import latin2utf
+from timelib import strpdatetime, strpdate, strptime
 from xmldom import DisabledValidation
 
 __all__ = [
@@ -49,6 +52,9 @@ __all__ = [
     'RestApp']
 
 
+DATE_TIME_TYPES = (datetime, date, time)
+
+
 def escape_object(obj):
     """Escapes HTML code withtin the provided object."""
 
@@ -61,6 +67,46 @@ def escape_object(obj):
             obj[key] = escape_object(obj[key])
 
     return obj
+
+
+def json_encode(obj):
+    """Encodes the object into a JSON-ish value."""
+
+    if isinstance(obj, DATE_TIME_TYPES):
+        return obj.isoformat()
+
+    return obj
+
+
+def json_decode(dictionary):
+    """Decodes the JSON-ish dictionary values."""
+
+    for key, value in dictionary.items:
+        with suppress(TypeError, ValueError):
+            dictionary[key] = strpdatetime(value)
+            continue
+
+        with suppress(TypeError, ValueError):
+            dictionary[key] = strpdate(value)
+            continue
+
+        with suppress(TypeError, ValueError):
+            dictionary[key] = strptime(value)
+            continue
+
+    return dictionary
+
+
+def dumps(obj, *, default=json_encode, **kwargs):
+    """Overrides json.loads."""
+
+    return dumps_(obj, default=default, **kwargs)
+
+
+def loads(s, *, object_hook=json_decode, **kwargs):
+    """Overrides json.loads."""
+
+    return loads_(s, object_hook=object_hook, **kwargs)
 
 
 def strip_json(dict_or_list):
