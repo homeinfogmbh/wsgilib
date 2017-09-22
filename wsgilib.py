@@ -574,6 +574,24 @@ class RequestHandler(LoggingClass):
         return self._data_cache
 
     @property
+    def text(self):
+        """Returns UTF-8 text."""
+        try:
+            return self.data.decode()
+        except AttributeError:
+            raise Error('No data provided.') from None
+        except UnicodeDecodeError:
+            raise Error('POST-ed data is not UTF-8 text.') from None
+
+    @property
+    def json(self):
+        """Returns the JSON dictionary."""
+        try:
+            return loads(self.text)
+        except ValueError:
+            raise Error('Text is not vaid JSON.') from None
+
+    @property
     def request_method(self):
         """Returns the request method."""
         return self.environ['REQUEST_METHOD']
