@@ -25,6 +25,7 @@ from urllib import parse
 
 from fancylog import LoggingClass
 from mimeutil import mimetype
+from pyxb import PyXBException
 from strflib import latin2utf
 from timelib import strpdatetime, strpdate, strptime
 from xmldom import DisabledValidation
