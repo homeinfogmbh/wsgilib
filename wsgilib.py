@@ -706,6 +706,7 @@ class WsgiApp(LoggingClass):
         self.request_handler = request_handler
         self.unquote = unquote
         self.cors = cors
+        self.debug = debug
 
     def __call__(self, environ, start_response):
         """Handles a WSGI query."""
