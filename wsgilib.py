@@ -732,6 +732,7 @@ class WsgiApp(LoggingClass):
             return InternalServerError(cors=self.cors)
         else:
             response.cors = self.cors
+            return response
 
 
 class ResourceHandler(RequestHandler):
