@@ -151,6 +151,7 @@ def is_handler(obj):
     try:
         return issubclass(obj, ResourceHandler)
     except TypeError:
+        print('Handler candidate: <{}> is of type {}.'.format(obj, type(obj)))
         return False
 
 
@@ -169,16 +170,16 @@ def get_handler_and_resource(handler, revpath, pathsep='/'):
             revpath.append(node)
             break
 
+    resource = None
+
     if revpath:
         resource = pathsep.join(reversed(revpath))
-    else:
-        resource = None
 
     if is_handler(handler):
         return (handler, resource)
-    else:
-        raise Error('Not a ReST handler: {}.'.format(
-            pathsep.join(handled_path)), status=400)
+
+    raise Error('Not a ReST handler: {}.'.format(
+        pathsep.join(handled_path)), status=400)
 
 
 # A dictionary of valid HTTP status codes
