@@ -34,8 +34,7 @@ __all__ = [
     'escape_object',
     'strip_json',
     'HTTP_STATUS',
-    'query2dict',
-    'set_cors',
+    'query_to_dict',
     'Headers',
     'WsgiResponse',
     'Response',
@@ -105,10 +104,10 @@ def dumps(obj, *, default=json_encode, **kwargs):
     return dumps_(obj, default=default, **kwargs)
 
 
-def loads(s, *, object_hook=json_decode, **kwargs):
+def loads(string, *, object_hook=json_decode, **kwargs):
     """Overrides json.loads."""
 
-    return loads_(s, object_hook=object_hook, **kwargs)
+    return loads_(string, object_hook=object_hook, **kwargs)
 
 
 def strip_json(dict_or_list):
@@ -270,28 +269,13 @@ def query_items(query_string, unquote=True, parsep='&', valsep='='):
                 yield (key, value)
 
 
-def query2dict(query_string, unquote=True):
+def query_to_dict(query_string, unquote=True):
     """Converts a query string into a dictionary."""
 
     if query_string:
         return dict(query_items(query_string), unquote=unquote)
 
     return {}
-
-
-def set_cors(response, cors):
-    """Fixes CORS settings on the respective response."""
-
-    if response.headers.cors is None:
-        response.headers.cors = cors
-
-    return response
-
-
-def probe():
-    """Tests whether the WSGI app is running."""
-
-    return OK('running')
 
 
 class Headers():
@@ -366,6 +350,17 @@ class WsgiResponse():
         yield list(self.headers)
         yield self.response_body
 
+    @property
+    def cors(self):
+        """Returns the CORS settings."""
+        return self.headers.cors
+
+    @cors.setter
+    def cors(self, cors):
+        """Fixes CORS settings on the respective response."""
+        if self.headers.cors is None:
+            self.headers.cors = cors
+
 
 class Response(Exception, WsgiResponse):
     """An WSGI error message."""
@@ -397,7 +392,7 @@ class PlainText(Response):
 
 
 class Error(PlainText):
-    """An WSGI error message"""
+    """An WSGI error message."""
 
     def __init__(self, msg=None, status=400, charset='utf-8', cors=None):
         """Returns a plain text error response."""
@@ -528,12 +523,11 @@ class InternalServerError(Error):
 class PostData:
     """Represents POST-ed data."""
 
-    ERROR_MESSAGES = {
-        'FILE_TOO_LARGE': Error('File too large.', status=507),
-        'NO_DATA_PROVIDED': Error('No data provided.'),
-        'NON_UTF8_DATA': Error('POST-ed data is not UTF-8 text.'),
-        'NON_JSON_DATA': Error('Text is not vaid JSON.'),
-        'INVALID_XML_DOM_DATA': Error('Invalid data for XML DOM.')}
+    FILE_TOO_LARGE = Error('File too large.', status=507)
+    NO_DATA_PROVIDED = Error('No data provided.')
+    NON_UTF8_DATA = Error('POST-ed data is not UTF-8 text.')
+    NON_JSON_DATA = Error('Text is not vaid JSON.')
+    INVALID_XML_DOM_DATA = Error('Invalid data for XML DOM.')
 
     def __init__(self, wsgi_input):
         """Sets the WSGI input and optional error handlers."""
@@ -545,12 +539,12 @@ class PostData:
         """Reads and returns the POST-ed data."""
         if self._cache is None:
             if self.wsgi_input is None:
-                raise self.ERROR_MESSAGES['NO_DATA_PROVIDED'] from None
+                raise self.NO_DATA_PROVIDED from None
 
             try:
                 self._cache = self.wsgi_input.read()
             except MemoryError:
-                raise self.ERROR_MESSAGES['FILE_TOO_LARGE'] from None
+                raise self.FILE_TOO_LARGE from None
 
         return self._cache
 
@@ -560,7 +554,7 @@ class PostData:
         try:
             return self.bytes.decode()
         except UnicodeDecodeError:
-            raise self.ERROR_MESSAGES['NON_UTF8_DATA'] from None
+            raise self.NON_UTF8_DATA from None
 
     @property
     def json(self):
@@ -568,24 +562,24 @@ class PostData:
         try:
             return loads(self.text)
         except ValueError:
-            raise self.ERROR_MESSAGES['NON_JSON_DATA'] from None
+            raise self.NON_JSON_DATA from None
 
     def dom(self, dom):
         """Loads XML data into the provided DOM model."""
         try:
             return dom.CreateFromDocument(self.text)
         except PyXBException:
-            raise self.ERROR_MESSAGES['INVALID_XML_DOM_DATA'] from None
+            raise self.INVALID_XML_DOM_DATA from None
 
 
 class RequestHandler(LoggingClass):
     """Request handling wrapper for WsgiApps."""
 
-    def __init__(self, environ, unquote=True, logger=None, testable=False):
+    def __init__(self, environ, unquote=True, logger=None):
         """Sets the environ and additional configuration parameters."""
         super().__init__(logger=logger)
         self.environ = environ
-        self.query = query2dict(self.query_string, unquote=unquote)
+        self.query = query_to_dict(self.query_string, unquote=unquote)
         self.data = PostData(self.environ.get('wsgi.input'))
         self.methods = {
             'GET': self.get,
@@ -599,9 +593,6 @@ class RequestHandler(LoggingClass):
             'PROPFIND': self.propfind,
             'COPY': self.copy,
             'MOVE': self.move}
-
-        if testable:
-            self.methods['PROBE'] = probe
 
     def __call__(self):
         """Call respective method and catch any exception."""
@@ -693,19 +684,18 @@ class RequestHandler(LoggingClass):
 
 
 class WsgiApp(LoggingClass):
-    """Abstract WSGI application"""
+    """Abstract WSGI application."""
 
     def __init__(self, request_handler, unquote=True, cors=None, logger=None,
-                 debug=False, log_level=None, testable=False):
-        """Sets CORS flags and logger"""
+                 debug=False, log_level=None):
+        """Sets CORS flags and logger."""
         super().__init__(logger=logger, debug=debug, level=log_level)
         self.request_handler = request_handler
         self.unquote = unquote
         self.cors = cors
-        self.testable = testable
 
     def __call__(self, environ, start_response):
-        """Handles a WSGI query"""
+        """Handles a WSGI query."""
         status, response_headers, response_body = self._run(environ)
         start_response(status, response_headers)
 
@@ -713,14 +703,13 @@ class WsgiApp(LoggingClass):
             yield response_body
 
     def _run(self, environ):
-        """Returns the approriate WSGI response"""
+        """Returns the approriate WSGI response."""
         try:
-            request_handler = self.request_handler(
-                environ, unquote=self.unquote, logger=self.logger,
-                testable=self.testable)
-            return set_cors(request_handler(), self.cors)
+            response = self.request_handler(
+                environ, unquote=self.unquote, logger=self.logger)()
         except Response as response:
-            return set_cors(response, self.cors)
+            response.cors = self.cors
+            return response
         except Exception:
             if self.debug:
                 msg = format_exc()
@@ -728,37 +717,36 @@ class WsgiApp(LoggingClass):
                 return InternalServerError(msg=msg, cors=self.cors)
 
             return InternalServerError(cors=self.cors)
+        else:
+            response.cors = self.cors
 
 
 class ResourceHandler(RequestHandler):
-    """Handles a certain resource"""
+    """Handles a certain resource."""
 
     HANDLERS = None
 
-    def __init__(self, resource, environ, unquote=True, logger=None,
-                 testable=False):
-        """Invokes the super constructor and sets resource"""
-        super().__init__(
-            environ, unquote=unquote, logger=logger, testable=testable)
+    def __init__(self, resource, environ, unquote=True, logger=None):
+        """Invokes the super constructor and sets resource."""
+        super().__init__(environ, unquote=unquote, logger=logger)
         self.resource = resource
 
 
 class RestApp(WsgiApp):
-    """A RESTful web application"""
+    """A RESTful web application."""
 
     PATHSEP = '/'
 
     def __init__(self, handlers, unquote=True, cors=None, logger=None,
-                 debug=False, log_level=None, testable=False):
-        """Sets the root path for this web application"""
+                 debug=False, log_level=None):
+        """Sets the root path for this web application."""
         super().__init__(
             self.resource_handler, unquote=unquote, cors=cors, logger=logger,
-            debug=debug, log_level=log_level, testable=testable)
+            debug=debug, log_level=log_level)
         self.handlers = handlers
 
-    def resource_handler(self, environ, unquote=True, logger=None,
-                         testable=False):
-        """Returns the appropriate resource handler"""
+    def resource_handler(self, environ, unquote=True, logger=None):
+        """Returns the appropriate resource handler."""
         try:
             path = latin2utf(environ['PATH_INFO'])
         except KeyError:
@@ -768,5 +756,4 @@ class RestApp(WsgiApp):
 
         handler, resource = get_handler_and_resource(
             self.handlers, revpath, pathsep=self.PATHSEP)
-        return handler(resource, environ, unquote=unquote, logger=logger,
-                       testable=testable)
+        return handler(resource, environ, unquote=unquote, logger=logger)
