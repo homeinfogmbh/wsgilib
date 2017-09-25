@@ -46,6 +46,7 @@ __all__ = [
     'JSON',
     'Binary',
     'InternalServerError',
+    'PostData',
     'RequestHandler',
     'WsgiApp',
     'ResourceHandler',
@@ -523,6 +524,51 @@ class InternalServerError(Error):
         super().__init__(msg=msg, status=500, charset=charset, cors=cors)
 
 
+class PostData:
+    """Represents POST-ed data."""
+
+    ERROR_MESSAGES = {
+        'FILE_TOO_LARGE': Error('File too large.', status=507),
+        'NO_DATA_PROVIDED': Error('No data provided.'),
+        'NON_UTF8_DATA': Error('POST-ed data is not UTF-8 text.'),
+        'NON_JSON_DATA': Error('Text is not vaid JSON.')}
+
+    def __init__(self, wsgi_input):
+        """Sets the WSGI input and optional error handlers."""
+        self.wsgi_input = wsgi_input
+        self._cache = None
+
+    @property
+    def bytes(self):
+        """Reads and returns the POST-ed data."""
+        if self._cache is None:
+            if self.wsgi_input is None:
+                raise self.ERROR_MESSAGES['NO_DATA_PROVIDED'] from None
+
+            try:
+                self._cache = self.wsgi_input.read()
+            except MemoryError:
+                raise self.ERROR_MESSAGES['FILE_TOO_LARGE'] from None
+
+        return self._cache
+
+    @property
+    def text(self):
+        """Returns UTF-8 text."""
+        try:
+            return self.bytes.decode()
+        except UnicodeDecodeError:
+            raise self.ERROR_MESSAGES['NON_UTF8_DATA'] from None
+
+    @property
+    def json(self):
+        """Returns a JSON-ish dictionary."""
+        try:
+            return loads(self.text)
+        except ValueError:
+            raise self.ERROR_MESSAGES['NON_JSON_DATA'] from None
+
+
 class RequestHandler(LoggingClass):
     """Request handling wrapper for WsgiApps."""
 
@@ -531,7 +577,7 @@ class RequestHandler(LoggingClass):
         super().__init__(logger=logger)
         self.environ = environ
         self.query = query2dict(self.query_string, unquote=unquote)
-        self._data_cache = False
+        self.data = PostData(self.environ.get('wsgi.input'))
         self.methods = {
             'GET': self.get,
             'POST': self.post,
@@ -558,38 +604,6 @@ class RequestHandler(LoggingClass):
         except NotImplementedError:
             return Error('HTTP method "{}" is not implemented'.format(
                 self.environ.get('REQUEST_METHOD')), status=501)
-
-    @property
-    def data(self):
-        """Returns the data sent over HTTP."""
-        if self._data_cache is False:
-            try:
-                self._data_cache = self.environ['wsgi.input'].read()
-            except KeyError:
-                self._data_cache = None
-            except MemoryError:
-                self._data_cache = None
-                raise Error('File too large.', status=507) from None
-
-        return self._data_cache
-
-    @property
-    def text(self):
-        """Returns UTF-8 text."""
-        try:
-            return self.data.decode()
-        except AttributeError:
-            raise Error('No data provided.') from None
-        except UnicodeDecodeError:
-            raise Error('POST-ed data is not UTF-8 text.') from None
-
-    @property
-    def json(self):
-        """Returns the JSON dictionary."""
-        try:
-            return loads(self.text)
-        except ValueError:
-            raise Error('Text is not vaid JSON.') from None
 
     @property
     def request_method(self):
