@@ -531,7 +531,8 @@ class PostData:
         'FILE_TOO_LARGE': Error('File too large.', status=507),
         'NO_DATA_PROVIDED': Error('No data provided.'),
         'NON_UTF8_DATA': Error('POST-ed data is not UTF-8 text.'),
-        'NON_JSON_DATA': Error('Text is not vaid JSON.')}
+        'NON_JSON_DATA': Error('Text is not vaid JSON.'),
+        'INVALID_XML_DOM_DATA': Error('Invalid data for XML DOM.')}
 
     def __init__(self, wsgi_input):
         """Sets the WSGI input and optional error handlers."""
@@ -567,6 +568,13 @@ class PostData:
             return loads(self.text)
         except ValueError:
             raise self.ERROR_MESSAGES['NON_JSON_DATA'] from None
+
+    def dom(self, dom):
+        """Loads XML data into the provided DOM model."""
+        try:
+            return dom.CreateFromDocument(self.text)
+        except PyXBException:
+            raise self.ERROR_MESSAGES['INVALID_XML_DOM_DATA'] from None
 
 
 class RequestHandler(LoggingClass):
