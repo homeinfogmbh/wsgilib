@@ -527,24 +527,35 @@ class PostData:
     NO_DATA_PROVIDED = Error('No data provided.')
     NON_UTF8_DATA = Error('POST-ed data is not UTF-8 text.')
     NON_JSON_DATA = Error('Text is not vaid JSON.')
-    INVALID_XML_DOM_DATA = Error('Invalid data for XML DOM.')
+    INVALID_XML_DATA = Error('Invalid data for XML DOM.')
 
-    def __init__(self, wsgi_input):
+    def __init__(self, wsgi_input, errors=None):
         """Sets the WSGI input and optional error handlers."""
         self.wsgi_input = wsgi_input
+        self._load_errors(errors or {})
         self._cache = None
+
+    def _load_errors(self, errors):
+        """Loads overridden error exceptions."""
+        self.file_too_large = errors.get('FILE_TOO_LARGE', self.FILE_TOO_LARGE)
+        self.no_data_provided = errors.get(
+            'NO_DATA_PROVIDED', self.NO_DATA_PROVIDED)
+        self.non_utf8_data = errors.get('NON_UTF8_DATA', self.NON_UTF8_DATA)
+        self.non_json_data = errors.get('NON_JSON_DATA', self.NON_JSON_DATA)
+        self.invalid_xml_data = errors.get(
+            'INVALID_XML_DATA', self.INVALID_XML_DATA)
 
     @property
     def bytes(self):
         """Reads and returns the POST-ed data."""
         if self._cache is None:
             if self.wsgi_input is None:
-                raise self.NO_DATA_PROVIDED from None
+                raise self.no_data_provided from None
 
             try:
                 self._cache = self.wsgi_input.read()
             except MemoryError:
-                raise self.FILE_TOO_LARGE from None
+                raise self.file_too_large from None
 
         return self._cache
 
@@ -554,7 +565,7 @@ class PostData:
         try:
             return self.bytes.decode()
         except UnicodeDecodeError:
-            raise self.NON_UTF8_DATA from None
+            raise self.non_utf8_data from None
 
     @property
     def json(self):
@@ -562,25 +573,27 @@ class PostData:
         try:
             return loads(self.text)
         except ValueError:
-            raise self.NON_JSON_DATA from None
+            raise self.non_json_data from None
 
     def dom(self, dom):
         """Loads XML data into the provided DOM model."""
         try:
             return dom.CreateFromDocument(self.text)
         except PyXBException:
-            raise self.INVALID_XML_DOM_DATA from None
+            raise self.invalid_xml_data from None
 
 
 class RequestHandler(LoggingClass):
     """Request handling wrapper for WsgiApps."""
+
+    ERRORS = None   # Customized error definitions.
 
     def __init__(self, environ, unquote=True, logger=None):
         """Sets the environ and additional configuration parameters."""
         super().__init__(logger=logger)
         self.environ = environ
         self.query = query_to_dict(self.query_string, unquote=unquote)
-        self.data = PostData(self.environ.get('wsgi.input'))
+        self.data = PostData(environ.get('wsgi.input'), errors=self.ERRORS)
         self.methods = {
             'GET': self.get,
             'POST': self.post,
