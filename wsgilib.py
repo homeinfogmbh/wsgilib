@@ -151,7 +151,6 @@ def is_handler(obj):
     try:
         return issubclass(obj, ResourceHandler)
     except TypeError:
-        print('Handler candidate: <{}> is of type {}.'.format(obj, type(obj)))
         return False
 
 
@@ -167,7 +166,6 @@ def get_handler_and_resource(handler, revpath, pathsep='/'):
         try:
             handler = handler[node]
         except (KeyError, TypeError) as error:
-            print('Stopping because of:', type(error), error)
             revpath.append(node)
             break
 
