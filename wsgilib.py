@@ -166,7 +166,8 @@ def get_handler_and_resource(handler, revpath, pathsep='/'):
 
         try:
             handler = handler[node]
-        except (KeyError, TypeError):
+        except (KeyError, TypeError) as error:
+            print('Stopping because of:', error)
             revpath.append(node)
             break
 
