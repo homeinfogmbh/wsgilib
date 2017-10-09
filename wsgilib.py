@@ -82,7 +82,7 @@ def json_encode(obj):
 def json_decode(dictionary):
     """Decodes the JSON-ish dictionary values."""
 
-    for key, value in dictionary.items:
+    for key, value in dictionary.items():
         with suppress(TypeError, ValueError):
             dictionary[key] = strpdatetime(value)
             continue
