@@ -618,26 +618,31 @@ class RequestHandler(LoggingClass):
                 self.environ.get('REQUEST_METHOD')), status=501)
 
     @property
+    @lru_cache(maxsize=1)
     def request_method(self):
         """Returns the request method."""
         return self.environ['REQUEST_METHOD']
 
     @property
+    @lru_cache(maxsize=1)
     def path_info(self):
         """Returns the URL path."""
         return latin2utf(self.environ.get('PATH_INFO'))
 
     @property
+    @lru_cache(maxsize=1)
     def query_string(self):
         """Returns the query string."""
         return self.environ.get('QUERY_STRING')
 
     @property
+    @lru_cache(maxsize=1)
     def method(self):
         """Returns the method to invoke and its respective arguments."""
         return self.methods[self.request_method]
 
     @property
+    @lru_cache(maxsize=1)
     def path(self):
         """Returns a list of elements of the path."""
         try:
