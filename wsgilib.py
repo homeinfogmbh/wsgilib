@@ -17,6 +17,7 @@
 
 from contextlib import suppress
 from datetime import datetime, date, time
+from functools import lru_cache
 from hashlib import sha256
 from html import escape as escape_html
 from json import dumps as dumps_, loads as loads_
@@ -31,9 +32,9 @@ from timelib import strpdatetime, strpdate, strptime
 from xmldom import DisabledValidation
 
 __all__ = [
+    'HTTP_STATUS',
     'escape_object',
     'strip_json',
-    'HTTP_STATUS',
     'query_to_dict',
     'Headers',
     'WsgiResponse',
@@ -54,134 +55,6 @@ __all__ = [
 
 
 DATE_TIME_TYPES = (datetime, date, time)
-
-
-def escape_object(obj):
-    """Escapes HTML code withtin the provided object."""
-
-    if isinstance(obj, str):
-        return escape_html(obj)
-    elif isinstance(obj, list):
-        return [escape_object(item) for item in obj]
-    elif isinstance(obj, dict):
-        for key in obj:
-            obj[key] = escape_object(obj[key])
-
-    return obj
-
-
-def json_encode(obj):
-    """Encodes the object into a JSON-ish value."""
-
-    if isinstance(obj, DATE_TIME_TYPES):
-        return obj.isoformat()
-
-    return obj
-
-
-def json_decode(dictionary):
-    """Decodes the JSON-ish dictionary values."""
-
-    for key, value in dictionary.items():
-        with suppress(TypeError, ValueError):
-            dictionary[key] = strpdatetime(value)
-            continue
-
-        with suppress(TypeError, ValueError):
-            dictionary[key] = strpdate(value)
-            continue
-
-        with suppress(TypeError, ValueError):
-            dictionary[key] = strptime(value)
-            continue
-
-    return dictionary
-
-
-def dumps(obj, *, default=json_encode, **kwargs):
-    """Overrides json.loads."""
-
-    return dumps_(obj, default=default, **kwargs)
-
-
-def loads(string, *, object_hook=json_decode, **kwargs):
-    """Overrides json.loads."""
-
-    return loads_(string, object_hook=object_hook, **kwargs)
-
-
-def strip_json(dict_or_list):
-    """Strips empty data from JSON-like objects."""
-
-    if isinstance(dict_or_list, dict):
-        result = {}
-
-        for key in dict_or_list:
-            value = dict_or_list[key]
-
-            if isinstance(value, (dict, list)):
-                stripped = strip_json(value)
-
-                if stripped:
-                    result[key] = stripped
-            elif value is None:
-                continue
-            else:
-                result[key] = value
-    elif isinstance(dict_or_list, list):
-        result = []
-
-        for element in dict_or_list:
-            if isinstance(element, (dict, list)):
-                stripped = strip_json(element)
-
-                if stripped:
-                    result.append(stripped)
-            else:
-                result.append(element)
-    else:
-        raise ValueError('Object must be dict or list.')
-
-    return result
-
-
-def is_handler(obj):
-    """Checks if the respective object implements ResourceHandler."""
-
-    try:
-        return issubclass(obj, ResourceHandler)
-    except TypeError:
-        return False
-
-
-def get_handler_and_resource(handler, revpath, pathsep='/'):
-    """Splits the path into the respective handler and resource."""
-
-    handled_path = []
-
-    while revpath:
-        node = revpath.pop()
-        handled_path.append(node)
-
-        try:
-            handler = handler[node]
-        except (KeyError, TypeError) as error:
-            revpath.append(node)
-            break
-
-    resource = None
-
-    if revpath:
-        resource = pathsep.join(reversed(revpath))
-
-    if is_handler(handler):
-        return (handler, resource)
-
-    raise Error('Not a ReST handler: {}.'.format(
-        pathsep.join(handled_path)), status=400)
-
-
-# A dictionary of valid HTTP status codes
 HTTP_STATUS = {
     100: 'Continue',
     101: 'Switching Protocols',
@@ -247,6 +120,134 @@ HTTP_STATUS = {
     511: 'Network Authentication Required'}
 
 
+def escape_object(obj):
+    """Escapes HTML code withtin the provided object."""
+
+    if isinstance(obj, str):
+        return escape_html(obj)
+    elif isinstance(obj, list):
+        return [escape_object(item) for item in obj]
+    elif isinstance(obj, dict):
+        for key in obj:
+            obj[key] = escape_object(obj[key])
+
+    return obj
+
+
+def json_encode(obj):
+    """Encodes the object into a JSON-ish value."""
+
+    if isinstance(obj, DATE_TIME_TYPES):
+        return obj.isoformat()
+
+    return obj
+
+
+def json_decode(dictionary):
+    """Decodes the JSON-ish dictionary values."""
+
+    for key, value in dictionary.items():
+        with suppress(TypeError, ValueError):
+            dictionary[key] = strpdatetime(value)
+            continue
+
+        with suppress(TypeError, ValueError):
+            dictionary[key] = strpdate(value)
+            continue
+
+        with suppress(TypeError, ValueError):
+            dictionary[key] = strptime(value)
+            continue
+
+    return dictionary
+
+
+def dumps(obj, *, default=json_encode, **kwargs):
+    """Overrides json.loads."""
+
+    return dumps_(obj, default=default, **kwargs)
+
+
+def loads(string, *, object_hook=json_decode, **kwargs):
+    """Overrides json.loads."""
+
+    return loads_(string, object_hook=object_hook, **kwargs)
+
+
+def strip_json(dict_or_list):
+    """Strips empty data from JSON-ish objects."""
+
+    if isinstance(dict_or_list, dict):
+        result = {}
+
+        for key in dict_or_list:
+            value = dict_or_list[key]
+
+            if isinstance(value, (dict, list)):
+                stripped = strip_json(value)
+
+                if stripped:
+                    result[key] = stripped
+            elif value is None:
+                continue
+            else:
+                result[key] = value
+    elif isinstance(dict_or_list, list):
+        result = []
+
+        for element in dict_or_list:
+            if isinstance(element, (dict, list)):
+                stripped = strip_json(element)
+
+                if stripped:
+                    result.append(stripped)
+            else:
+                result.append(element)
+    else:
+        raise ValueError('Object must be dict or list.')
+
+    return result
+
+
+def is_handler(obj):
+    """Checks if the respective object implements ResourceHandler."""
+
+    try:
+        return issubclass(obj, ResourceHandler)
+    except TypeError:
+        return False
+
+
+def get_handler_and_resource(handler, path_info, pathsep='/'):
+    """Splits the path into the respective handler and resource."""
+
+    if path_info is None:
+        revpath = []
+    else:
+        path = latin2utf(path_info).split(pathsep)
+        revpath = [item for item in reversed(path) if item]
+
+    handled_path = []
+
+    while revpath:
+        node = revpath.pop()
+        handled_path.append(node)
+
+        try:
+            handler = handler[node]
+        except (KeyError, TypeError):
+            revpath.append(node)
+            break
+
+    resource = pathsep.join(reversed(revpath)) if revpath else None
+
+    if is_handler(handler):
+        return (handler, resource)
+
+    raise Error('Service not found: {}.'.format(
+        pathsep.join(handled_path)), status=404)
+
+
 def query_items(query_string, unquote=True, parsep='&', valsep='='):
     """Yields key-value pairs of the query string."""
 
@@ -278,7 +279,7 @@ def query_to_dict(query_string, unquote=True):
     return {}
 
 
-class Headers():
+class Headers:
     """Wraps response headers."""
 
     def __init__(self, content_type=None, content_length=None,
@@ -304,7 +305,7 @@ class Headers():
         if self.content_length is not None:
             yield ('Content-Length', str(self.content_length))
 
-        # Cross-origin resource sharing
+        # Cross-origin resource sharing.
         if self.cors:
             try:
                 origin, methods = self.cors
@@ -321,11 +322,11 @@ class Headers():
                 methods = ', '.join(m.upper() for m in methods)
                 yield ('Access-Control-Allow-Methods', methods)
 
-        # Optional fields
+        # User-defined fields.
         yield from self.fields.items()
 
 
-class WsgiResponse():
+class WsgiResponse:
     """A WSGI response."""
 
     def __init__(self, status, content_type=None, response_body=None,
@@ -499,12 +500,18 @@ class Binary(Response):
 
     @filename.setter
     def filename(self, filename):
-        """Sets the file name."""
+        """Sets the file name.
+
+        Setting the file name to None will also remove
+        any Content-Disposition header field.
+        """
         self._filename = filename
 
         if filename is not None:
             content_disposition = 'attachment; filename="{}"'.format(filename)
             self.headers.fields['Content-Disposition'] = content_disposition
+        else:
+            self.headers.fields.pop('Content-Disposition', None)
 
 
 class InternalServerError(Error):
@@ -523,41 +530,29 @@ class InternalServerError(Error):
 class PostData:
     """Represents POST-ed data."""
 
-    FILE_TOO_LARGE = Error('File too large.', status=507)
-    NO_DATA_PROVIDED = Error('No data provided.')
-    NON_UTF8_DATA = Error('POST-ed data is not UTF-8 text.')
-    NON_JSON_DATA = Error('Text is not vaid JSON.')
-    INVALID_XML_DATA = Error('Invalid data for XML DOM.')
+    file_too_large = Error('File too large.', status=507)
+    no_data_provided = Error('No data provided.')
+    non_utf8_data = Error('POST-ed data is not UTF-8 text.')
+    non_json_data = Error('Text is not vaid JSON.')
+    no_dom_specified = Error('No DOM specified.')
+    invalid_xml_data = Error('Invalid data for XML DOM.')
 
-    def __init__(self, wsgi_input, errors=None):
+    def __init__(self, wsgi_input, dom=None):
         """Sets the WSGI input and optional error handlers."""
         self.wsgi_input = wsgi_input
-        self._load_errors(errors or {})
-        self._cache = None
-
-    def _load_errors(self, errors):
-        """Loads overridden error exceptions."""
-        self.file_too_large = errors.get('FILE_TOO_LARGE', self.FILE_TOO_LARGE)
-        self.no_data_provided = errors.get(
-            'NO_DATA_PROVIDED', self.NO_DATA_PROVIDED)
-        self.non_utf8_data = errors.get('NON_UTF8_DATA', self.NON_UTF8_DATA)
-        self.non_json_data = errors.get('NON_JSON_DATA', self.NON_JSON_DATA)
-        self.invalid_xml_data = errors.get(
-            'INVALID_XML_DATA', self.INVALID_XML_DATA)
+        self.dom = dom
 
     @property
+    @lru_cache(maxsize=1)
     def bytes(self):
         """Reads and returns the POST-ed data."""
-        if self._cache is None:
-            if self.wsgi_input is None:
-                raise self.no_data_provided from None
+        if self.wsgi_input is None:
+            raise self.no_data_provided from None
 
-            try:
-                self._cache = self.wsgi_input.read()
-            except MemoryError:
-                raise self.file_too_large from None
-
-        return self._cache
+        try:
+            return self.wsgi_input.read()
+        except MemoryError:
+            raise self.file_too_large from None
 
     @property
     def text(self):
@@ -575,10 +570,14 @@ class PostData:
         except ValueError:
             raise self.non_json_data from None
 
-    def dom(self, dom):
+    @property
+    def xml(self):
         """Loads XML data into the provided DOM model."""
+        if self.dom is None:
+            raise self.no_dom_specified
+
         try:
-            return dom.CreateFromDocument(self.text)
+            return self.dom.CreateFromDocument(self.text)
         except PyXBException:
             raise self.invalid_xml_data from None
 
@@ -586,14 +585,14 @@ class PostData:
 class RequestHandler(LoggingClass):
     """Request handling wrapper for WsgiApps."""
 
-    ERRORS = None   # Customized error definitions.
+    DATA_HANDLER = PostData
 
     def __init__(self, environ, unquote=True, logger=None):
         """Sets the environ and additional configuration parameters."""
         super().__init__(logger=logger)
         self.environ = environ
         self.query = query_to_dict(self.query_string, unquote=unquote)
-        self.data = PostData(environ.get('wsgi.input'), errors=self.ERRORS)
+        self.data = self.DATA_HANDLER(environ.get('wsgi.input'))
         self.methods = {
             'GET': self.get,
             'POST': self.post,
@@ -699,10 +698,9 @@ class RequestHandler(LoggingClass):
 class WsgiApp(LoggingClass):
     """Abstract WSGI application."""
 
-    def __init__(self, request_handler, unquote=True, cors=None, logger=None,
-                 debug=False, log_level=None):
-        """Sets CORS flags and logger."""
-        super().__init__(logger=logger, debug=debug, level=log_level)
+    def __init__(self, request_handler, unquote=True, cors=None, debug=False):
+        """Sets request handler, unquote and CORS flags and debug mode."""
+        super().__init__(debug=debug)
         self.request_handler = request_handler
         self.unquote = unquote
         self.cors = cors
@@ -717,7 +715,9 @@ class WsgiApp(LoggingClass):
             yield response_body
 
     def _run(self, environ):
-        """Returns the approriate WSGI response."""
+        """Instantiates and calls the request handler,
+        handles errors and returns response.
+        """
         try:
             response = self.request_handler(
                 environ, unquote=self.unquote, logger=self.logger)()
@@ -725,15 +725,16 @@ class WsgiApp(LoggingClass):
             response.cors = self.cors
             return response
         except Exception:
+            message = format_exc()
+            self.logger.error(message)
+
             if self.debug:
-                msg = format_exc()
-                self.logger.error(msg)
-                return InternalServerError(msg=msg, cors=self.cors)
+                return InternalServerError(msg=message, cors=self.cors)
 
             return InternalServerError(cors=self.cors)
-        else:
-            response.cors = self.cors
-            return response
+
+        response.cors = self.cors
+        return response
 
 
 class ResourceHandler(RequestHandler):
@@ -750,25 +751,18 @@ class ResourceHandler(RequestHandler):
 class RestApp(WsgiApp):
     """A RESTful web application."""
 
-    PATHSEP = '/'
+    @property
+    def request_handler(self):
+        """Dynamically returns the respective resource handler."""
+        def wrap(environ, unquote=True, logger=None):
+            """Wraps the instantiation of the respective resource handler."""
+            handler, resource = get_handler_and_resource(
+                self.handlers, environ.get('PATH_INFO'))
+            return handler(resource, environ, unquote=unquote, logger=logger)
 
-    def __init__(self, handlers, unquote=True, cors=None, logger=None,
-                 debug=False, log_level=None):
-        """Sets the root path for this web application."""
-        super().__init__(
-            self.resource_handler, unquote=unquote, cors=cors, logger=logger,
-            debug=debug, log_level=log_level)
+        return wrap
+
+    @request_handler.setter
+    def request_handler(self, handlers):
+        """Sets the provided resource handlers."""
         self.handlers = handlers
-
-    def resource_handler(self, environ, unquote=True, logger=None):
-        """Returns the appropriate resource handler."""
-        try:
-            path = latin2utf(environ['PATH_INFO'])
-        except KeyError:
-            revpath = []
-        else:
-            revpath = [i for i in reversed(path.split(self.PATHSEP)) if i]
-
-        handler, resource = get_handler_and_resource(
-            self.handlers, revpath, pathsep=self.PATHSEP)
-        return handler(resource, environ, unquote=unquote, logger=logger)
