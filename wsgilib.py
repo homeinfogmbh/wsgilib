@@ -252,12 +252,12 @@ def query_items(query_string, unquote=True, parsep='&', valsep='='):
     """Yields key-value pairs of the query string."""
 
     for parameter in query_string.split(parsep):
-        # Skip empty parameter data
+        # Skip empty parameter data.
         if parameter:
             fragments = parameter.split(valsep)
             key = fragments[0]
 
-            # Skip empty-named parameters
+            # Skip empty-named parameters.
             if key:
                 if len(fragments) == 1:
                     value = True
