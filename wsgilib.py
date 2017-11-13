@@ -555,6 +555,7 @@ class PostData:
             raise self.file_too_large from None
 
     @property
+    @lru_cache(maxsize=1)
     def text(self):
         """Returns UTF-8 text."""
         try:
