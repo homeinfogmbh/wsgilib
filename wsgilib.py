@@ -159,6 +159,8 @@ def json_decode(dictionary):
             dictionary[key] = strptime(value)
             continue
 
+        dictionary[key] = value
+
     return dictionary
 
 
