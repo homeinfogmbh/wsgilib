@@ -146,22 +146,24 @@ def json_encode(obj):
 def json_decode(dictionary):
     """Decodes the JSON-ish dictionary values."""
 
+    result = {}
+
     for key, value in dictionary.items():
         with suppress(TypeError, ValueError):
-            dictionary[key] = strpdatetime(value)
+            result[key] = strpdatetime(value)
             continue
 
         with suppress(TypeError, ValueError):
-            dictionary[key] = strpdate(value)
+            result[key] = strpdate(value)
             continue
 
         with suppress(TypeError, ValueError):
-            dictionary[key] = strptime(value)
+            result[key] = strptime(value)
             continue
 
-        dictionary[key] = value
+        result[key] = value
 
-    return dictionary
+    return result
 
 
 def dumps(obj, *, default=json_encode, **kwargs):
