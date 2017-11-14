@@ -17,7 +17,7 @@
 
 from contextlib import suppress
 from datetime import datetime, date, time
-from functools import lru_cache
+from functools import lru_cache, partial
 from hashlib import sha256
 from html import escape as escape_html
 from json import dumps as dumps_, loads as loads_
@@ -260,6 +260,35 @@ def query_to_dict(query_string, unquote=True):
         return dict(query_items(query_string), unquote=unquote)
 
     return {}
+
+
+def laod_resource_handler(pool, environ, unquote=True, logger=None):
+    """Loads the respective resource handler from the provided pool."""
+
+    handler = None
+    remainder = None
+    processed = ['']
+
+    for element, remainder in iterpath(environ['PATH_INFO']):
+        processed.append(element)
+
+        try:
+            pool = pool[element]
+        except KeyError:
+            break
+
+        with suppress(TypeError):
+            # Try to instantiate a potential resource
+            # handler and make it the new pool.
+            handler = pool = pool(
+                handler, environ, unquote=unquote, logger=logger)
+
+    if handler is not None:
+        handler.resource = remainder or None
+        return handler
+
+    raise Error('Service not found: {}.'.format(PATH_SEP.join(processed)),
+                status=404)
 
 
 class Headers:
@@ -744,38 +773,7 @@ class RestApp(WsgiApp):
     @property
     def request_handler(self):
         """Dynamically returns the respective resource handler."""
-        def wrap(environ, unquote=True, logger=None):
-            """Wraps the instantiation of the respective resource handler."""
-            pool = self.handlers
-            handler = None
-            processed = []
-
-            print('### Searching handler ###')
-
-            for element, remainder in iterpath(environ['PATH_INFO']):
-                processed.append(element)
-
-                try:
-                    pool = pool[element]
-                except KeyError:
-                    break
-                else:
-                    print('Found sub-handler', pool, 'for', element)
-
-                with suppress(TypeError):
-                    handler = pool = pool(
-                        handler, environ, unquote=unquote, logger=logger)
-                    print('Instantiated handler:', handler, element,
-                          handler.parent)
-
-            if handler is not None:
-                handler.resource = remainder or None
-                return handler
-
-            raise Error('Service not found: {}.'.format(
-                PATH_SEP.join(processed)), status=404)
-
-        return wrap
+        return partial(laod_resource_handler, self.handlers)
 
     @request_handler.setter
     def request_handler(self, handlers):
