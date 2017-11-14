@@ -225,9 +225,10 @@ def iterpath(path_info):
     if path_info is None:
         raise StopIteration()
 
-    for item in reversed(latin2utf(path_info).split(PATH_SEP)):
-        if item:
-            yield item
+    items = list(filter(None, reversed(latin2utf(path_info).split(PATH_SEP))))
+
+    while items:
+        yield (items.pop(), PATH_SEP.join(reversed(items)))
 
 
 def query_items(query_string, unquote=True, parsep='&', valsep='='):
@@ -730,12 +731,11 @@ class ResourceHandler(RequestHandler):
 
     HANDLERS = None
 
-    def __init__(self, resource, environ, parent=None, unquote=True,
-                 logger=None):
+    def __init__(self, parent, environ, unquote=True, logger=None):
         """Invokes the super constructor and sets resource."""
         super().__init__(environ, unquote=unquote, logger=logger)
-        self.resource = resource
         self.parent = parent
+        self.resource = None
 
 
 class RestApp(WsgiApp):
@@ -752,7 +752,7 @@ class RestApp(WsgiApp):
 
             print('### Searching handler ###')
 
-            for element in iterpath(environ['PATH_INFO']):
+            for element, remainder in iterpath(environ['PATH_INFO']):
                 processed.append(element)
 
                 try:
@@ -760,16 +760,16 @@ class RestApp(WsgiApp):
                 except KeyError:
                     break
                 else:
-                    print('Found sub-handler:', pool)
+                    print('Found sub-handler', pool, 'for', element)
 
                 with suppress(TypeError):
                     handler = pool = pool(
-                        element, environ, unquote=unquote, logger=logger,
-                        parent=handler)
+                        handler, environ, unquote=unquote, logger=logger)
                     print('Instantiated handler:', handler, element,
                           handler.parent)
 
             if handler is not None:
+                handler.resource = remainder or None
                 return handler
 
             raise Error('Service not found: {}.'.format(
