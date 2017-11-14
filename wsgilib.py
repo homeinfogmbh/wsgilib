@@ -570,6 +570,10 @@ class PostData:
     @property
     def json(self):
         """Returns a JSON-ish dictionary."""
+        print('MyText:', self.text)
+        print('loads_:', loads_(self.text))
+        print('loads:', loads(self.text))
+
         try:
             return loads(self.text)
         except ValueError:
