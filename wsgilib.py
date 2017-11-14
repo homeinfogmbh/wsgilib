@@ -758,13 +758,15 @@ class WsgiApp(LoggingClass):
 class ResourceHandler(RequestHandler):
     """Handles a certain resource."""
 
-    HANDLERS = None
-
     def __init__(self, parent, environ, unquote=True, logger=None):
         """Invokes the super constructor and sets resource."""
         super().__init__(environ, unquote=unquote, logger=logger)
         self.parent = parent
         self.resource = None
+
+    def __getitem__(self, item):
+        """Returns sub-handlers or pools."""
+        raise KeyError('No such sub-handler or pool: {}.'.format(item))
 
 
 class RestApp(WsgiApp):
