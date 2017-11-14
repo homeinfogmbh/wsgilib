@@ -228,7 +228,7 @@ def iterpath(path_info):
     items = list(filter(None, reversed(latin2utf(path_info).split(PATH_SEP))))
 
     while items:
-        yield (items.pop(), PATH_SEP.join(reversed(items)))
+        yield (items.pop(), PATH_SEP.join(reversed(items)) or None)
 
 
 def query_items(query_string, unquote=True, parsep='&', valsep='='):
@@ -277,7 +277,7 @@ def laod_resource_handler(pool, environ, unquote=True, logger=None):
         except KeyError:
             break
         else:
-            resource = remainder or None
+            resource = remainder
 
         with suppress(TypeError):
             # Try to instantiate a potential resource
@@ -287,7 +287,6 @@ def laod_resource_handler(pool, environ, unquote=True, logger=None):
 
     if handler is not None:
         handler.resource = resource
-        print('Returning handler:', handler, handler.resource, handler.parent)
         return handler
 
     raise Error('Service not found: {}.'.format(PATH_SEP.join(processed)),
