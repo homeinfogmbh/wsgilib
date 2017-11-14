@@ -266,7 +266,7 @@ def laod_resource_handler(pool, environ, unquote=True, logger=None):
     """Loads the respective resource handler from the provided pool."""
 
     handler = None
-    remainder = None
+    resource = None
     processed = ['']
 
     for element, remainder in iterpath(environ['PATH_INFO']):
@@ -276,6 +276,8 @@ def laod_resource_handler(pool, environ, unquote=True, logger=None):
             pool = pool[element]
         except KeyError:
             break
+        else:
+            resource = remainder or None
 
         with suppress(TypeError):
             # Try to instantiate a potential resource
@@ -283,10 +285,10 @@ def laod_resource_handler(pool, environ, unquote=True, logger=None):
             handler = pool = pool(
                 handler, environ, unquote=unquote, logger=logger)
             print('Loaded handler:', handler, handler.parent, element,
-                  remainder)
+                  resource)
 
     if handler is not None:
-        handler.resource = remainder or None
+        handler.resource = resource
         return handler
 
     raise Error('Service not found: {}.'.format(PATH_SEP.join(processed)),
