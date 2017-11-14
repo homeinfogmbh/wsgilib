@@ -55,6 +55,7 @@ __all__ = [
 
 
 DATE_TIME_TYPES = (datetime, date, time)
+PATH_SEP = '/'
 HTTP_STATUS = {
     100: 'Continue',
     101: 'Switching Protocols',
@@ -218,34 +219,15 @@ def is_handler(obj):
         return False
 
 
-def get_handler_and_resource(handler, path_info, pathsep='/'):
-    """Splits the path into the respective handler and resource."""
+def iterpath(path_info):
+    """Iterates over elements of the respective path."""
 
     if path_info is None:
-        revpath = []
-    else:
-        path = latin2utf(path_info).split(pathsep)
-        revpath = [item for item in reversed(path) if item]
+        raise StopIteration()
 
-    handled_path = []
-
-    while revpath:
-        node = revpath.pop()
-        handled_path.append(node)
-
-        try:
-            handler = handler[node]
-        except (KeyError, TypeError):
-            revpath.append(node)
-            break
-
-    resource = pathsep.join(reversed(revpath)) if revpath else None
-
-    if is_handler(handler):
-        return (handler, resource)
-
-    raise Error('Service not found: {}.'.format(
-        pathsep.join(handled_path)), status=404)
+    for item in reversed(latin2utf(path_info).split(PATH_SEP)):
+        if item:
+            yield item
 
 
 def query_items(query_string, unquote=True, parsep='&', valsep='='):
@@ -748,10 +730,12 @@ class ResourceHandler(RequestHandler):
 
     HANDLERS = None
 
-    def __init__(self, resource, environ, unquote=True, logger=None):
+    def __init__(self, resource, environ, parent=None, unquote=True,
+                 logger=None):
         """Invokes the super constructor and sets resource."""
         super().__init__(environ, unquote=unquote, logger=logger)
         self.resource = resource
+        self.parent = parent
 
 
 class RestApp(WsgiApp):
@@ -762,9 +746,30 @@ class RestApp(WsgiApp):
         """Dynamically returns the respective resource handler."""
         def wrap(environ, unquote=True, logger=None):
             """Wraps the instantiation of the respective resource handler."""
-            handler, resource = get_handler_and_resource(
-                self.handlers, environ.get('PATH_INFO'))
-            return handler(resource, environ, unquote=unquote, logger=logger)
+            handler = self.handlers
+            processed = []
+
+            for element in iterpath(environ['PATH_INFO']):
+                processed.append(element)
+
+                with suppress(TypeError):
+                    handler = handler(
+                        element, environ, unquote=unquote, logger=logger,
+                        parent=handler)
+                    print('Instantiated handler:', handler)
+
+                try:
+                    handler = handler[element]
+                except KeyError:
+                    break
+                else:
+                    print('Found sub-handler:', handler)
+
+            if isinstance(handler, ResourceHandler):
+                return handler
+
+            raise Error('Service not found: {}.'.format(
+                PATH_SEP.join(processed)), status=404)
 
         return wrap
 
