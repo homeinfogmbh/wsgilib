@@ -282,6 +282,8 @@ def laod_resource_handler(pool, environ, unquote=True, logger=None):
             # handler and make it the new pool.
             handler = pool = pool(
                 handler, environ, unquote=unquote, logger=logger)
+            print('Loaded handler:', handler, handler.parent, element,
+                  remainder)
 
     if handler is not None:
         handler.resource = remainder or None
