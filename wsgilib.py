@@ -15,6 +15,7 @@
 #  along with this program. If not, see <http://www.gnu.org/licenses/>.
 """Simple (U)WSGI framework for web applications."""
 
+from contextlib import suppress
 from datetime import datetime, date, time
 from functools import lru_cache
 from hashlib import sha256
@@ -145,30 +146,20 @@ def json_encode(obj):
 def json_decode(dictionary):
     """Decodes the JSON-ish dictionary values."""
 
-    result = {}
-
     for key, value in dictionary.items():
-        datetime_ = strpdatetime(value)
-
-        if datetime_ is not None:
-            result[key] = datetime_
+        with suppress(TypeError, ValueError):
+            dictionary[key] = strpdatetime(value)
             continue
 
-        date_ = strpdate(value)
-
-        if date_ is not None:
-            result[key] = date_
+        with suppress(TypeError, ValueError):
+            dictionary[key] = strpdate(value)
             continue
 
-        time_ = strptime(value)
-
-        if time_ is not None:
-            result[key] = time_
+        with suppress(TypeError, ValueError):
+            dictionary[key] = strptime(value)
             continue
 
-        result[key] = value
-
-    return result
+    return dictionary
 
 
 def dumps(obj, *, default=json_encode, **kwargs):
