@@ -15,7 +15,6 @@
 #  along with this program. If not, see <http://www.gnu.org/licenses/>.
 """Simple (U)WSGI framework for web applications."""
 
-from contextlib import suppress
 from datetime import datetime, date, time
 from functools import lru_cache
 from hashlib import sha256
@@ -149,16 +148,22 @@ def json_decode(dictionary):
     result = {}
 
     for key, value in dictionary.items():
-        with suppress(TypeError, ValueError):
-            result[key] = strpdatetime(value)
+        datetime_ = strpdatetime(value)
+
+        if datetime_ is not None:
+            result[key] = datetime_
             continue
 
-        with suppress(TypeError, ValueError):
-            result[key] = strpdate(value)
+        date_ = strpdate(value)
+
+        if date_ is not None:
+            result[key] = date_
             continue
 
-        with suppress(TypeError, ValueError):
-            result[key] = strptime(value)
+        time_ = strptime(value)
+
+        if time_ is not None:
+            result[key] = time_
             continue
 
         result[key] = value
@@ -570,10 +575,6 @@ class PostData:
     @property
     def json(self):
         """Returns a JSON-ish dictionary."""
-        print('MyText:', self.text)
-        print('loads_:', loads_(self.text))
-        print('loads:', loads(self.text))
-
         try:
             return loads(self.text)
         except ValueError:
