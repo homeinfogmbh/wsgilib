@@ -284,11 +284,10 @@ def laod_resource_handler(pool, environ, unquote=True, logger=None):
             # handler and make it the new pool.
             handler = pool = pool(
                 handler, environ, unquote=unquote, logger=logger)
-            print('Loaded handler:', handler, handler.parent, element,
-                  resource)
 
     if handler is not None:
         handler.resource = resource
+        print('Returning handler:', handler, handler.resource, handler.parent)
         return handler
 
     raise Error('Service not found: {}.'.format(PATH_SEP.join(processed)),
