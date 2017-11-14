@@ -749,6 +749,8 @@ class RestApp(WsgiApp):
             handler = self.handlers
             processed = []
 
+            print('### Searching handler ###')
+
             for element in iterpath(environ['PATH_INFO']):
                 processed.append(element)
 
@@ -764,6 +766,8 @@ class RestApp(WsgiApp):
                     break
                 else:
                     print('Found sub-handler:', handler)
+
+            print('### Searched handler ###')
 
             if isinstance(handler, ResourceHandler):
                 return handler
