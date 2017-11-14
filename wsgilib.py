@@ -746,7 +746,8 @@ class RestApp(WsgiApp):
         """Dynamically returns the respective resource handler."""
         def wrap(environ, unquote=True, logger=None):
             """Wraps the instantiation of the respective resource handler."""
-            handler = self.handlers
+            pool = self.handlers
+            handler = None
             processed = []
 
             print('### Searching handler ###')
@@ -755,13 +756,13 @@ class RestApp(WsgiApp):
                 processed.append(element)
 
                 with suppress(TypeError):
-                    handler = handler(
+                    handler = pool = pool(
                         element, environ, unquote=unquote, logger=logger,
                         parent=handler)
                     print('Instantiated handler:', handler)
 
                 try:
-                    handler = handler[element]
+                    pool = pool[element]
                 except KeyError:
                     break
                 else:
@@ -769,7 +770,7 @@ class RestApp(WsgiApp):
 
             print('### Searched handler ###')
 
-            if isinstance(handler, ResourceHandler):
+            if handler is not None:
                 return handler
 
             raise Error('Service not found: {}.'.format(
