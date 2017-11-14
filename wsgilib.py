@@ -755,20 +755,18 @@ class RestApp(WsgiApp):
             for element in iterpath(environ['PATH_INFO']):
                 processed.append(element)
 
-                with suppress(TypeError):
-                    handler = pool = pool(
-                        element, environ, unquote=unquote, logger=logger,
-                        parent=handler)
-                    print('Instantiated handler:', handler)
-
                 try:
                     pool = pool[element]
                 except KeyError:
                     break
                 else:
-                    print('Found sub-handler:', handler)
+                    print('Found sub-handler:', pool)
 
-            print('### Searched handler ###')
+                with suppress(TypeError):
+                    handler = pool = pool(
+                        element, environ, unquote=unquote, logger=logger,
+                        parent=handler)
+                    print('Instantiated handler:', handler)
 
             if handler is not None:
                 return handler
