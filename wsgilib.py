@@ -766,7 +766,7 @@ class RestApp(WsgiApp):
                     handler = pool = pool(
                         element, environ, unquote=unquote, logger=logger,
                         parent=handler)
-                    print('Instantiated handler:', handler)
+                    print('Instantiated handler:', handler, element, parent)
 
             if handler is not None:
                 return handler
