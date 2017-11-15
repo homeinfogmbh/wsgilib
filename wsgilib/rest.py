@@ -2,6 +2,7 @@
 
 from collections import namedtuple
 from functools import lru_cache, partial
+from itertools import chain
 
 from wsgilib.common import Error, RequestHandler, WsgiApp
 from wsgilib.exceptions import InvalidPlaceholderType, InvalidNodeType, \
@@ -114,7 +115,12 @@ class Route:
                     else:
                         yield RouteVariable(name, value)
 
-        remainder = PATH_SEP.join(path_nodes)
+        try:
+            tail = (path_node,)
+        except UnboundLocalError:
+            tail = ()
+
+        remainder = PATH_SEP.join(chain(path_nodes, tail))
 
         if remainder:
             raise UnconsumedPath(remainder)
