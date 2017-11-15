@@ -85,14 +85,14 @@ class NodeMismatch(RouteError):
 class UnconsumedPath(RouteError):
     """Indicates that there are unconsumed path nodes."""
 
-    def __init__(self, remainder):
-        """Sets the remainder."""
-        super().__init__(remainder)
-        self.remainder = remainder
+    def __init__(self, nodes):
+        """Sets the remaining nodes."""
+        super().__init__(nodes)
+        self.nodes = tuple(nodes)
 
     def __str__(self):
         """Returns the remainder as path."""
-        return self.remainder
+        return PATH_SEP.join(self.nodes)
 
 
 class PathMismatch(RouteError):

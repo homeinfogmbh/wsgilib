@@ -2,12 +2,12 @@
 
 from collections import namedtuple
 from functools import lru_cache, partial
-from itertools import chain, zip_longest
+from itertools import zip_longest
 
 from wsgilib.common import Error, RequestHandler, WsgiApp
 from wsgilib.exceptions import InvalidPlaceholderType, InvalidNodeType, \
     NodeMismatch, UnconsumedPath, PathMismatch, UnmatchedPath
-from wsgilib.misc import PATH_SEP, PLACEHOLDER_TYPES, pathinfo, iterpath
+from wsgilib.misc import PLACEHOLDER_TYPES, pathinfo, iterpath
 
 __all__ = [
     'load_handler',
@@ -98,11 +98,15 @@ class Route:
 
     def match_items(self, path_nodes):
         """Matches path items."""
-        for path_node, route_node in zip_longest(path_nodes, self):
-            if path_node is None or route_node is None:
-                raise NodeMismatch(route_node, path_node)
+        unconsumed = []
 
-            print('Path node:', path_node)
+        for path_node, route_node in zip_longest(path_nodes, self):
+            if path_node is None:
+                raise NodeMismatch(route_node, path_node)
+            elif route_node is None:
+                # Consume supoerfluous path nodes.
+                unconsumed.append(path_node)
+                continue
 
             if isinstance(route_node, str):
                 if path_node != route_node:
@@ -120,17 +124,8 @@ class Route:
                     else:
                         yield RouteVariable(name, value)
 
-        try:
-            tail = (path_node,)
-        except UnboundLocalError:
-            tail = ()
-
-        print('rail:', tail)
-        remainder = PATH_SEP.join(chain(path_nodes, tail))
-        print(remainder)
-
-        if remainder:
-            raise UnconsumedPath(remainder)
+        if unconsumed:
+            raise UnconsumedPath(unconsumed)
 
 
 class RestHandler(RequestHandler):
