@@ -1,18 +1,21 @@
 """Representational State Transfer."""
 
+from collections import namedtuple
 from functools import lru_cache, partial
 
 from wsgilib.common import Error, RequestHandler, WsgiApp
 from wsgilib.exceptions import InvalidPlaceholderType, InvalidNodeType, \
     NodeMismatch, UnconsumedPath, PathMismatch, UnmatchedPath
-from wsgilib.misc import PATH_SEP, PLACEHOLDER_TYPES, RoutePlaceholder, \
-    pathinfo, iterpath
+from wsgilib.misc import PATH_SEP, PLACEHOLDER_TYPES, pathinfo, iterpath
 
 __all__ = [
     'load_handler',
     'Route',
     'RestApp',
     'RestHandler']
+
+RoutePlaceholder = namedtuple('RoutePlaceholder', ('name', 'typ'))
+RouteVariable = namedtuple('RouteVariable', ('name', 'value'))
 
 
 def load_handler(router, environ, unquote=True, logger=None):
@@ -102,14 +105,14 @@ class Route:
                 name, typ = route_node
 
                 if typ is None:
-                    yield RoutePlaceholder(name, path_node)
+                    yield RouteVariable(name, path_node)
                 else:
                     try:
                         value = typ(path_node)
                     except (TypeError, ValueError):
                         raise InvalidNodeType(name, typ, path_node)
                     else:
-                        yield RoutePlaceholder(name, value)
+                        yield RouteVariable(name, value)
 
         remainder = PATH_SEP.join(path_nodes)
 

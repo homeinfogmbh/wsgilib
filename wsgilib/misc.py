@@ -1,6 +1,5 @@
 """Miscellaneous constants and functions."""
 
-from collections import namedtuple
 from contextlib import suppress
 from datetime import datetime, date, time
 from html import escape as escape_html
@@ -15,7 +14,6 @@ __all__ = [
     'DATE_TIME_TYPES',
     'PATH_SEP',
     'HTTP_STATUS',
-    'RoutePlaceholder',
     'escape_object',
     'json_encode',
     'json_decode',
@@ -98,8 +96,6 @@ PLACEHOLDER_TYPES = {
     'int': int,
     'bool': bool,
     'float': float}
-
-RoutePlaceholder = namedtuple('RoutePlaceholder', ('name', 'value'))
 
 
 def escape_object(obj):
