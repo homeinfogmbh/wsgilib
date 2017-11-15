@@ -121,7 +121,9 @@ class Route:
         except UnboundLocalError:
             tail = ()
 
+        print('rail:', tail)
         remainder = PATH_SEP.join(chain(path_nodes, tail))
+        print(remainder)
 
         if remainder:
             raise UnconsumedPath(remainder)
