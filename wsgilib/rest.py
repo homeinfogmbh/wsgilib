@@ -99,6 +99,7 @@ class Route:
     def match_items(self, path_nodes):
         """Matches path items."""
         for path_node, route_node in zip(path_nodes, self):
+            print('Path node:', path_node)
             if isinstance(route_node, str):
                 if path_node != route_node:
                     raise NodeMismatch(route_node, path_node)
