@@ -68,6 +68,7 @@ class Route:
         for node in iterpath(self.path):
             if node.startswith('<') and node.endswith('>'):
                 placeholder = node[1:-1]
+                print('placeholder:', placeholder)
 
                 try:
                     placeholder, typ = placeholder.split(':')
