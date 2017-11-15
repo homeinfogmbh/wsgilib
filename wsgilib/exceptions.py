@@ -92,7 +92,7 @@ class UnconsumedPath(RouteError):
 
     def __str__(self):
         """Returns the remainder as path."""
-        return PATH_SEP.join(self.remainder)
+        return self.remainder
 
 
 class PathMismatch(RouteError):

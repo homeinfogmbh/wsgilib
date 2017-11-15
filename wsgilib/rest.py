@@ -2,7 +2,7 @@
 
 from collections import namedtuple
 from functools import lru_cache, partial
-from itertools import chain
+from itertools import chain, zip_longest
 
 from wsgilib.common import Error, RequestHandler, WsgiApp
 from wsgilib.exceptions import InvalidPlaceholderType, InvalidNodeType, \
@@ -98,8 +98,12 @@ class Route:
 
     def match_items(self, path_nodes):
         """Matches path items."""
-        for path_node, route_node in zip(path_nodes, self):
+        for path_node, route_node in zip_longest(path_nodes, self):
+            if path_node is None or route_node is None:
+                raise NodeMismatch(route_node, path_node)
+
             print('Path node:', path_node)
+
             if isinstance(route_node, str):
                 if path_node != route_node:
                     raise NodeMismatch(route_node, path_node)
