@@ -15,27 +15,20 @@
 #  along with this program. If not, see <http://www.gnu.org/licenses/>.
 """Simple (U)WSGI framework for web applications."""
 
-from contextlib import suppress
-from datetime import datetime, date, time
-from functools import lru_cache, partial
+from functools import lru_cache
 from hashlib import sha256
-from html import escape as escape_html
-from json import dumps as dumps_, loads as loads_
 from traceback import format_exc
-from urllib import parse
 
 from fancylog import LoggingClass
 from mimeutil import mimetype
 from pyxb import PyXBException
 from strflib import latin2utf
-from timelib import strpdatetime, strpdate, strptime
 from xmldom import DisabledValidation
 
+from wsgilib.misc import HTTP_STATUS, strip_json, escape_object, \
+    json_dumps, json_loads, query_to_dict
+
 __all__ = [
-    'HTTP_STATUS',
-    'escape_object',
-    'strip_json',
-    'query_to_dict',
     'Headers',
     'WsgiResponse',
     'Response',
@@ -49,248 +42,7 @@ __all__ = [
     'InternalServerError',
     'PostData',
     'RequestHandler',
-    'WsgiApp',
-    'ResourceHandler',
-    'RestApp']
-
-
-DATE_TIME_TYPES = (datetime, date, time)
-PATH_SEP = '/'
-HTTP_STATUS = {
-    100: 'Continue',
-    101: 'Switching Protocols',
-    102: 'Processing',
-    200: 'OK',
-    201: 'Created',
-    202: 'Accepted',
-    203: 'Non-Authoritative Information',
-    204: 'No Content',
-    205: 'Reset Content',
-    206: 'Partial Content',
-    207: 'Multi-Status',
-    208: 'Already Reported',
-    226: 'IM Used',
-    300: 'Multiple Choices',
-    301: 'Moved Permanently',
-    302: 'Found',
-    303: 'See Other',
-    304: 'Not Modified',
-    305: 'Use Proxy',
-    306: 'Switch Proxy',  # Deprecated!
-    307: 'Temporary Redirect',
-    308: 'Permanent Redirect',
-    400: 'Bad Request',
-    401: 'Unauthorized',
-    402: 'Payment Required',
-    403: 'Forbidden',
-    404: 'Not Found',
-    405: 'Method Not Allowed',
-    406: 'Not Acceptable',
-    407: 'Proxy Authentication Required',
-    408: 'Request Time-out',
-    409: 'Conflict',
-    410: 'Gone',
-    411: 'Length Required',
-    412: 'Precondition Failed',
-    413: 'Request Entity Too Large',
-    414: 'Request-URL Too Long',
-    415: 'Unsupported Media Type',
-    416: 'Requested range not satisfiable',
-    417: 'Expectation Failed',
-    420: 'Policy Not Fulfilled',
-    421: 'Misdirected Request',
-    422: 'Unprocessable Entity',
-    423: 'Locked',
-    424: 'Failed Dependency',
-    426: 'Upgrade Required',
-    428: 'Precondition Required',
-    429: 'Too Many Requests',
-    431: 'Request Header Fields Too Large',
-    451: 'Unavailable For Legal Reasons',
-    500: 'Internal Server Error',
-    501: 'Not Implemented',
-    502: 'Bad Gateway',
-    503: 'Service Unavailable',
-    504: 'Gateway Time-out',
-    505: 'HTTP Version not supported',
-    506: 'Variant Also Negotiates',
-    507: 'Insufficient Storage',
-    508: 'Loop Detected',
-    509: 'Bandwidth Limit Exceeded',
-    510: 'Not Extended',
-    511: 'Network Authentication Required'}
-
-
-def escape_object(obj):
-    """Escapes HTML code withtin the provided object."""
-
-    if isinstance(obj, str):
-        return escape_html(obj)
-    elif isinstance(obj, list):
-        return [escape_object(item) for item in obj]
-    elif isinstance(obj, dict):
-        for key in obj:
-            obj[key] = escape_object(obj[key])
-
-    return obj
-
-
-def json_encode(obj):
-    """Encodes the object into a JSON-ish value."""
-
-    if isinstance(obj, DATE_TIME_TYPES):
-        return obj.isoformat()
-
-    return obj
-
-
-def json_decode(dictionary):
-    """Decodes the JSON-ish dictionary values."""
-
-    for key, value in dictionary.items():
-        with suppress(TypeError, ValueError):
-            dictionary[key] = strpdatetime(value)
-            continue
-
-        with suppress(TypeError, ValueError):
-            dictionary[key] = strpdate(value)
-            continue
-
-        with suppress(TypeError, ValueError):
-            dictionary[key] = strptime(value)
-            continue
-
-    return dictionary
-
-
-def dumps(obj, *, default=json_encode, **kwargs):
-    """Overrides json.loads."""
-
-    return dumps_(obj, default=default, **kwargs)
-
-
-def loads(string, *, object_hook=json_decode, **kwargs):
-    """Overrides json.loads."""
-
-    return loads_(string, object_hook=object_hook, **kwargs)
-
-
-def strip_json(dict_or_list):
-    """Strips empty data from JSON-ish objects."""
-
-    if isinstance(dict_or_list, dict):
-        result = {}
-
-        for key in dict_or_list:
-            value = dict_or_list[key]
-
-            if isinstance(value, (dict, list)):
-                stripped = strip_json(value)
-
-                if stripped:
-                    result[key] = stripped
-            elif value is None:
-                continue
-            else:
-                result[key] = value
-    elif isinstance(dict_or_list, list):
-        result = []
-
-        for element in dict_or_list:
-            if isinstance(element, (dict, list)):
-                stripped = strip_json(element)
-
-                if stripped:
-                    result.append(stripped)
-            else:
-                result.append(element)
-    else:
-        raise ValueError('Object must be dict or list.')
-
-    return result
-
-
-def is_handler(obj):
-    """Checks if the respective object implements ResourceHandler."""
-
-    try:
-        return issubclass(obj, ResourceHandler)
-    except TypeError:
-        return False
-
-
-def iterpath(path_info):
-    """Iterates over elements of the respective path."""
-
-    if path_info is None:
-        raise StopIteration()
-
-    items = list(filter(None, reversed(latin2utf(path_info).split(PATH_SEP))))
-
-    while items:
-        yield (items.pop(), PATH_SEP.join(reversed(items)) or None)
-
-
-def query_items(query_string, unquote=True, parsep='&', valsep='='):
-    """Yields key-value pairs of the query string."""
-
-    for parameter in query_string.split(parsep):
-        # Skip empty parameter data.
-        if parameter:
-            fragments = parameter.split(valsep)
-            key = fragments[0]
-
-            # Skip empty-named parameters.
-            if key:
-                if len(fragments) == 1:
-                    value = True
-                else:
-                    value = valsep.join(fragments[1:])
-
-                    if unquote:
-                        value = parse.unquote(value)
-
-                yield (key, value)
-
-
-def query_to_dict(query_string, unquote=True):
-    """Converts a query string into a dictionary."""
-
-    if query_string:
-        return dict(query_items(query_string), unquote=unquote)
-
-    return {}
-
-
-def laod_resource_handler(pool, environ, unquote=True, logger=None):
-    """Loads the respective resource handler from the provided pool."""
-
-    handler = None
-    resource = None
-    processed = ['']
-
-    for element, remainder in iterpath(environ['PATH_INFO']):
-        processed.append(element)
-
-        try:
-            pool = pool[element]
-        except KeyError:
-            break
-        else:
-            resource = remainder
-
-        with suppress(TypeError):
-            # Try to instantiate a potential resource
-            # handler and make it the new pool.
-            handler = pool = pool(
-                handler, environ, unquote=unquote, logger=logger)
-
-    if handler is not None:
-        handler.resource = resource
-        return handler
-
-    raise Error('Service not found: {}.'.format(PATH_SEP.join(processed)),
-                status=404)
+    'WsgiApp']
 
 
 class Headers:
@@ -472,7 +224,7 @@ class JSON(Response):
             dictionary = escape_object(dictionary)
 
         super().__init__(
-            msg=dumps(dictionary, indent=indent), status=status,
+            msg=json_dumps(dictionary, indent=indent), status=status,
             content_type='application/json', encoding=True, cors=cors)
 
 
@@ -581,7 +333,7 @@ class PostData:
     def json(self):
         """Returns a JSON-ish dictionary."""
         try:
-            return loads(self.text)
+            return json_loads(self.text)
         except ValueError:
             raise self.non_json_data from None
 
@@ -755,31 +507,3 @@ class WsgiApp(LoggingClass):
 
         response.cors = self.cors
         return response
-
-
-class ResourceHandler(RequestHandler):
-    """Handles a certain resource."""
-
-    def __init__(self, parent, environ, unquote=True, logger=None):
-        """Invokes the super constructor and sets resource."""
-        super().__init__(environ, unquote=unquote, logger=logger)
-        self.parent = parent
-        self.resource = None
-
-    def __getitem__(self, item):
-        """Returns sub-handlers or pools."""
-        raise KeyError('No such sub-handler or pool: {}.'.format(item))
-
-
-class RestApp(WsgiApp):
-    """A RESTful web application."""
-
-    @property
-    def request_handler(self):
-        """Dynamically returns the respective resource handler."""
-        return partial(laod_resource_handler, self.handlers)
-
-    @request_handler.setter
-    def request_handler(self, handlers):
-        """Sets the provided resource handlers."""
-        self.handlers = handlers
