@@ -12,6 +12,7 @@ from wsgilib.misc import pathinfo, iterpath
 __all__ = [
     'load_handler',
     'Route',
+    'Router',
     'RestApp',
     'RestHandler']
 
@@ -34,31 +35,6 @@ def load_handler(router, environ, unquote=True, logger=None):
             environ, unquote=unquote, logger=logger)
     except UnmatchedPath as mismatch:
         raise Error('Service not found: {}.'.format(mismatch), status=404)
-
-
-class Router:
-    """A ReST router.
-
-    The router matches routes against a
-    given path until a match is found.
-    Raises UnmatchedPath if no match could be found.
-    """
-
-    def __init__(self, *routes):
-        """Sets the routes."""
-        self.routes = routes
-
-    def match(self, path):
-        """Gets the matching route for the respective path."""
-        for route, handler in self.routes:
-            try:
-                args = route.match(path)
-            except NodeMismatch:
-                continue
-            else:
-                return partial(handler, args)
-
-        raise UnmatchedPath(path)
 
 
 class Route:
@@ -168,6 +144,31 @@ class Route:
 
         if unconsumed:
             raise UnconsumedPath(unconsumed)
+
+
+class Router:
+    """A ReST router.
+
+    The router matches routes against a
+    given path until a match is found.
+    Raises UnmatchedPath if no match could be found.
+    """
+
+    def __init__(self, *routes):
+        """Sets the routes."""
+        self.routes = routes
+
+    def match(self, path):
+        """Gets the matching route for the respective path."""
+        for route, handler in self.routes:
+            try:
+                args = route.match(path)
+            except NodeMismatch:
+                continue
+            else:
+                return partial(handler, args)
+
+        raise UnmatchedPath(path)
 
 
 class RestHandler(RequestHandler):
