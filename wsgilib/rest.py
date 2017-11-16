@@ -184,7 +184,7 @@ class RestHandler(RequestHandler):
     def resource(self):
         """Returns the primary resource (legacy)."""
         try:
-            return self.args[0]
+            return self.args[0][1]
         except IndexError:
             return None
 
