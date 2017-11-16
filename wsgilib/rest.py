@@ -191,7 +191,9 @@ class RestHandler(RequestHandler):
     @property
     @lru_cache(maxsize=1)
     def resource(self):
-        """Returns the primary resource (legacy)."""
+        """Returns the value of the first variable
+        in the path for legacy compliance.
+        """
         try:
             return self.args[0][1]
         except IndexError:
