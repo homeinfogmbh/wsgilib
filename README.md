@@ -22,36 +22,27 @@ The following example shows a trivial WSGI application that will return the UTF-
 
 
 ### ReST Application
-For applications using **Re**presentational **S**tate **T**ransfer the library provides the classes `RestApp` and `ResourceHandler` to handle the respective resources.
+For applications using **Re**presentational **S**tate **T**ransfer the library provides the classes `RestApp` and `RestHandler` to handle the respective resources.
 
     from math import factorial
-    from wsgilib import Error, OK, ResourceHandler, RestApp
+    from wsgilib import OK, Router, Route, RestHandler, RestApp
 
 
-    class MyHandler(ResourceHandler):
+    class MyHandler(RestHandler):
 
         def get(self):
-            if self.resource is None:
-                return OK('No resource specified.')
-            else:
-                try:
-                    integer = int(self.resource)
-                except ValueError:
-                    raise Error('Not an integer: {}'.format(self.resource)) from None
-                else:
-                    return OK('{}! = {}'.format(integer, factorial(integer)))
+            value = self.vars['value']
+            return OK('{}! = {}'.format(integer, factorial(integer)))
 
 
-    HANDLERS = {
-        'factorial': ResourceHandler
-    }
+    ROUTER = Router(
+        Route('/factorial/<value:int>': MyHandler)
+    )
 
 
-    application = RestApp(HANDLERS)
+    application = RestApp(ROUTER)
 
-The example above of a simple ReST application will return the following values:
-* `http://<host>/factorial` → *"No resource specified."*
-* `http://<host>/factorial/not_an_integer` → *"Not an integer: not_an_integer"*
+The above ReST application will return the following response:
 * `http://<host>/factorial/12` → *"12! = 479001600"*
 
 ## Return values
