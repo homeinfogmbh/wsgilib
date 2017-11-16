@@ -149,8 +149,8 @@ class Route:
 class Router:
     """A ReST router.
 
-    The router matches routes against a
-    given path until a match is found.
+    The router matches routes against a given path
+    until a match is found.
     Raises UnmatchedPath if no match could be found.
     """
 
