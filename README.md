@@ -25,19 +25,18 @@ The following example shows a trivial WSGI application that will return the UTF-
 For applications using **Re**presentational **S**tate **T**ransfer the library provides the classes `RestApp` and `RestHandler` to handle the respective resources.
 
     from math import factorial
-    from wsgilib import OK, Router, Route, RestHandler, RestApp
+    from wsgilib import OK, Router, RestHandler, RestApp
 
 
+    ROUTER = Router()
+
+
+    @ROUTER.route('/factorial/<value:int>')
     class MyHandler(RestHandler):
 
         def get(self):
             value = self.vars['value']
             return OK('{}! = {}'.format(integer, factorial(integer)))
-
-
-    ROUTER = Router(
-        Route('/factorial/<value:int>': MyHandler)
-    )
 
 
     application = RestApp(ROUTER)
