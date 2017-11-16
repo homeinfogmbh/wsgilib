@@ -163,7 +163,7 @@ class Router:
         for route, handler in self.routes:
             try:
                 args = route.match(path)
-            except NodeMismatch:
+            except PathMismatch:
                 continue
             else:
                 return partial(handler, args)
