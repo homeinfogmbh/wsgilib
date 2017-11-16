@@ -7,13 +7,20 @@ from itertools import zip_longest
 from wsgilib.common import Error, RequestHandler, WsgiApp
 from wsgilib.exceptions import InvalidPlaceholderType, InvalidNodeType, \
     NodeMismatch, UnconsumedPath, PathMismatch, UnmatchedPath
-from wsgilib.misc import PLACEHOLDER_TYPES, pathinfo, iterpath
+from wsgilib.misc import pathinfo, iterpath
 
 __all__ = [
     'load_handler',
     'Route',
     'RestApp',
     'RestHandler']
+
+
+PLACEHOLDER_TYPES = {
+    'str': str,
+    'int': int,
+    'bool': bool,
+    'float': float}
 
 RoutePlaceholder = namedtuple('RoutePlaceholder', ('name', 'typ', 'optional'))
 RouteVariable = namedtuple('RouteVariable', ('name', 'value'))
@@ -30,7 +37,12 @@ def load_handler(router, environ, unquote=True, logger=None):
 
 
 class Router:
-    """A ReST router."""
+    """A ReST router.
+
+    The router matches routes against a
+    given path until a match is found.
+    Raises UnmatchedPath if no match could be found.
+    """
 
     def __init__(self, *routes):
         """Sets the routes."""
@@ -50,7 +62,25 @@ class Router:
 
 
 class Route:
-    """A ReST API route."""
+    """A ReST API route.
+
+    A Route is a query string that may contain
+    mandatory or optional placeholders.
+
+    Mandatory placeholders:
+        /some/path/<mandatory_placeholder>/to/resource
+
+    Optional placeholders:
+        /some/path/[optional_placeholder]
+
+    Placeholders can specify their type:
+        placeholder = <name>[:<type>]
+
+    Current supported types are str, int, float and bool.
+
+    Example:
+        Route('/my_app/<foo:int>/[frobnicate:bool]')
+    """
 
     def __init__(self, path):
         """Sets the respective nodes."""

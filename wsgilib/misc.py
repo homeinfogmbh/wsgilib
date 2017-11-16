@@ -91,11 +91,6 @@ HTTP_STATUS = {
     509: 'Bandwidth Limit Exceeded',
     510: 'Not Extended',
     511: 'Network Authentication Required'}
-PLACEHOLDER_TYPES = {
-    'str': str,
-    'int': int,
-    'bool': bool,
-    'float': float}
 
 
 def escape_object(obj):
