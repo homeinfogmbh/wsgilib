@@ -22,7 +22,7 @@ The following example shows a trivial WSGI application that will return the UTF-
 
 
 ### ReST Application
-For applications using **Re**presentational **S**tate **T**ransfer the library provides the classes `RestApp` and `RestHandler` to handle the respective resources.
+For applications using **Re**presentational **S**tate **T**ransfer the library provides the classes `RestApp`, `RestHandler` and `Router` to handle the respective resources.
 
     from math import factorial
     from wsgilib import OK, Router, RestHandler, RestApp
@@ -36,7 +36,7 @@ For applications using **Re**presentational **S**tate **T**ransfer the library p
 
         def get(self):
             value = self.vars['value']
-            return OK('{}! = {}'.format(integer, factorial(integer)))
+            return OK('{}! = {}'.format(value, factorial(value)))
 
 
     application = RestApp(ROUTER)
