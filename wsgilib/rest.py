@@ -117,7 +117,7 @@ class Route:
                     try:
                         typ = PLACEHOLDER_TYPES[typ]
                     except KeyError:
-                        raise InvalidPlaceholderType(typ)
+                        raise InvalidPlaceholderType(typ) from None
 
                 yield RoutePlaceholder(placeholder, typ, optional)
             else:
@@ -183,6 +183,7 @@ class RestHandler(RequestHandler):
         raise KeyError('No such sub-handler or pool: {}.'.format(item))
 
     @property
+    @lru_cache(maxsize=1)
     def resource(self):
         """Returns the primary resource (legacy)."""
         try:
@@ -192,7 +193,7 @@ class RestHandler(RequestHandler):
 
     @property
     @lru_cache(maxsize=1)
-    def keys(self):
+    def vars(self):
         """Returns the arguments as a dictionary."""
         return dict(self.args)
 
