@@ -156,7 +156,7 @@ class Router:
 
     def __init__(self, *routes):
         """Sets the routes."""
-        self.routes = routes
+        self.routes = list(routes)
 
     def match(self, path):
         """Gets the matching route for the respective path."""
@@ -169,6 +169,15 @@ class Router:
                 return partial(handler, args)
 
         raise UnmatchedPath(path)
+
+    def route(self, route):
+        """Decorator to add a RestHandler for the respective route."""
+        def wrap(rest_handler):
+            """Wraps the RestHandler."""
+            self.routes.append((Route(route), rest_handler))
+            return rest_handler
+
+        return wrap
 
 
 class RestHandler(RequestHandler):
