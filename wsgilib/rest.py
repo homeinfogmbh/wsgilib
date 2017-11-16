@@ -15,7 +15,7 @@ __all__ = [
     'RestApp',
     'RestHandler']
 
-RoutePlaceholder = namedtuple('RoutePlaceholder', ('name', 'typ'))
+RoutePlaceholder = namedtuple('RoutePlaceholder', ('name', 'typ', 'optional'))
 RouteVariable = namedtuple('RouteVariable', ('name', 'value'))
 
 
@@ -67,9 +67,17 @@ class Route:
     def __iter__(self):
         """Yields the respective nodes."""
         for node in iterpath(self.path):
+            placeholder = None
+            optional = False
+
             if node.startswith('<') and node.endswith('>'):
                 placeholder = node[1:-1]
 
+            if node.startswith('[') and node.endswith(']'):
+                placeholder = node[1:-1]
+                optional = True
+
+            if placeholder is not None:
                 try:
                     placeholder, typ = placeholder.split(':')
                 except ValueError:
@@ -80,7 +88,7 @@ class Route:
                     except KeyError:
                         raise InvalidPlaceholderType(typ)
 
-                yield RoutePlaceholder(placeholder, typ)
+                yield RoutePlaceholder(placeholder, typ, optional)
             else:
                 yield node
 
@@ -101,9 +109,7 @@ class Route:
         unconsumed = []
 
         for path_node, route_node in zip_longest(path_nodes, self):
-            if path_node is None:
-                raise NodeMismatch(route_node, path_node)
-            elif route_node is None:
+            if route_node is None:
                 # Consume supoerfluous path nodes.
                 unconsumed.append(path_node)
                 continue
@@ -112,9 +118,14 @@ class Route:
                 if path_node != route_node:
                     raise NodeMismatch(route_node, path_node)
             else:
-                name, typ = route_node
+                name, typ, optional = route_node
 
-                if typ is None:
+                if path_node is None:
+                    if optional:
+                        yield RouteVariable(name, None)
+                    else:
+                        raise NodeMismatch(route_node, path_node)
+                elif typ is None:
                     yield RouteVariable(name, path_node)
                 else:
                     try:
