@@ -178,10 +178,6 @@ class RestHandler(RequestHandler):
         super().__init__(environ, unquote=unquote, logger=logger)
         self.args = args
 
-    def __getitem__(self, item):
-        """Returns sub-handlers or pools."""
-        raise KeyError('No such sub-handler or pool: {}.'.format(item))
-
     @property
     @lru_cache(maxsize=1)
     def resource(self):
