@@ -64,7 +64,7 @@ class Router:
 class Route:
     """A ReST API route.
 
-    A Route is a query string that may contain
+    A Route is a URL path that may contain
     mandatory or optional placeholders.
 
     Mandatory placeholders:
@@ -80,6 +80,7 @@ class Route:
 
     Example:
         Route('/my_app/<foo:int>/[frobnicate:bool]')
+        Route('/set_name/<name>')
     """
 
     def __init__(self, path):
