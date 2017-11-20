@@ -30,6 +30,7 @@ from wsgilib.misc import pathinfo, iterpath
 
 __all__ = [
     'load_handler',
+    'routed',
     'Route',
     'Router',
     'RestApp',
@@ -54,6 +55,17 @@ def load_handler(router, environ, unquote=True, logger=None):
             environ, unquote=unquote, logger=logger)
     except UnmatchedPath as mismatch:
         raise Error('Service not found: {}.'.format(mismatch), status=404)
+
+
+def routed(route):
+    """Sets a route on the respective interface."""
+
+    def wrap(handler):
+        """Sets the route onto the handler."""
+        handler.ROUTE = Route(route)
+        return handler
+
+    return wrap
 
 
 class Route:
@@ -175,11 +187,21 @@ class Router:
 
     def __init__(self, *routes):
         """Sets the routes."""
-        self.routes = list(routes)
+        self.table = list(routes)
+
+    @classmethod
+    def from_handlers(cls, *routed_handlers):
+        """Creates a router from the respective routed handlers."""
+        router = cls()
+
+        for routed_handler in routed_handlers:
+            router.add(routed_handler)
+
+        return router
 
     def match(self, path):
         """Gets the matching route for the respective path."""
-        for route, handler in self.routes:
+        for route, handler in self.table:
             try:
                 args = route.match(path)
             except PathMismatch:
@@ -193,10 +215,14 @@ class Router:
         """Decorator to add a RestHandler for the respective route."""
         def wrap(rest_handler):
             """Wraps the RestHandler."""
-            self.routes.append((Route(route), rest_handler))
+            self.table.append((Route(route), rest_handler))
             return rest_handler
 
         return wrap
+
+    def add(self, routed_handler):
+        """Adds a routed handler to the routing table."""
+        return self.table.append((routed_handler.ROUTE, routed_handler))
 
 
 class RestHandler(RequestHandler):
