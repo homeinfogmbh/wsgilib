@@ -24,9 +24,10 @@ from .common import Headers, WsgiResponse, Response, Error, PlainText, OK, \
     WsgiApp
 from .exceptions import RouteError, InvalidPlaceholderType, InvalidNodeType, \
     NodeMismatch, UnconsumedPath, PathMismatch, UnmatchedPath
-from .rest import Route, Router, RestApp, RestHandler
+from .rest import routed, Route, Router, RestApp, RestHandler
 
 __all__ = [
+    'routed',
     'Headers',
     'WsgiResponse',
     'Response',
