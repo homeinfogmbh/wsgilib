@@ -23,7 +23,7 @@ from functools import lru_cache
 from hashlib import sha256
 from traceback import format_exc
 
-from fancylog import LoggingClass
+from fancylog import LogLevel, LoggingClass
 from mimeutil import mimetype
 from pyxb import PyXBException
 from strflib import latin2utf
@@ -476,7 +476,7 @@ class WsgiApp(LoggingClass):
 
     def __init__(self, request_handler, unquote=True, cors=None, debug=False):
         """Sets request handler, unquote and CORS flags and debug mode."""
-        super().__init__(debug=debug)
+        super().__init__(level=LogLevel.SUCCESS, debug=debug)
         self.request_handler = request_handler
         self.unquote = unquote
         self.cors = cors
