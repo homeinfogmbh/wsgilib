@@ -27,7 +27,7 @@ from flask import request, Response as Response_, Flask
 from pyxb import PyXBException
 
 from fancylog import LoggingClass
-from mimeutil import mimetype
+from mimeutil import mimetype as get_mimetype
 from xmldom import DisabledValidation
 
 from wsgilib.json import strip_json, escape_object, json_dumps, json_loads
@@ -49,17 +49,23 @@ __all__ = [
 class Response(Exception, Response_):
     """An WSGI error message."""
 
-    def __init__(self, msg='', status=200, content_type='text/plain',
+    def __init__(self, msg='', status=200, mimetype='text/plain',
                  charset='utf-8', encoding=True, headers=None):
         """Generates an error WSGI response."""
+        Exception.__init__(self, msg)
+
         if encoding:
             msg = msg.encode(encoding=charset)
-            content_type = '{}; charset={}'.format(content_type, charset)
 
-        Exception.__init__(self, msg)
-        Response_.__init__(
-            self, response=msg, status=status, headers=headers,
-            mimetype=content_type)
+        if charset is not None:
+            content_type = '{}; charset={}'.format(mimetype, charset)
+            Response_.__init__(
+                self, response=msg, status=status, headers=headers,
+                content_type=content_type)
+        else:
+            Response_.__init__(
+                self, response=msg, status=status, headers=headers,
+                mimetype=mimetype)
 
 
 class PlainText(Response):
@@ -68,7 +74,7 @@ class PlainText(Response):
     def __init__(self, msg=None, status=200, charset='utf-8'):
         """Returns a plain text success response."""
         super().__init__(
-            msg=msg, status=status, content_type='text/plain',
+            msg=msg, status=status, mimetype='text/plain',
             charset=charset, encoding=True)
 
 
@@ -100,7 +106,7 @@ class HTML(Response):
     def __init__(self, msg=None, status=200, charset='utf-8'):
         """Returns a plain text success response."""
         super().__init__(
-            msg=msg, status=status, content_type='text/html',
+            msg=msg, status=status, mimetype='text/html',
             charset=charset, encoding=True)
 
 
@@ -116,7 +122,7 @@ class XML(Response):
                 xml_text = dom.toxml(encoding=charset)
 
         super().__init__(
-            msg=xml_text, status=status, content_type='application/xml',
+            msg=xml_text, status=status, mimetype='application/xml',
             charset=charset, encoding=None)
 
 
@@ -136,7 +142,7 @@ class JSON(Response):
 
         super().__init__(
             msg=json_dumps(dictionary, indent=indent), status=status,
-            content_type='application/json', encoding=True)
+            mimetype='application/json', encoding=True)
 
 
 class Binary(Response):
@@ -147,7 +153,7 @@ class Binary(Response):
         with binary data and an optional etag.
         """
         super().__init__(
-            msg=data, status=status, content_type=mimetype(data),
+            msg=data, status=status, mimetype=get_mimetype(data),
             charset=None, encoding=False)
         self._filename = None
         self.etag = etag
