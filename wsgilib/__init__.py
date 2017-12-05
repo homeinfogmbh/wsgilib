@@ -237,16 +237,21 @@ class InternalServerError(Response):
 class PostData:
     """Represents POST-ed data."""
 
-    file_too_large = Error('File too large.', status=507)
-    no_data_provided = Error('No data provided.')
-    non_utf8_data = Error('POST-ed data is not UTF-8 text.')
-    non_json_data = Error('Text is not vaid JSON.')
-    no_dom_specified = Error('No DOM specified.')
-    invalid_xml_data = Error('Invalid data for XML DOM.')
-
-    def __init__(self, dom=None):
+    def __init__(self, dom=None, **errors):
         """Sets the WSGI input and optional error handlers."""
         self.dom = dom
+        self.file_too_large = errors.get(
+            'file_too_large', Error('File too large.', status=507))
+        self.no_data_provided = errors.get(
+            'no_data_provided', Error('No data provided.'))
+        self.non_utf8_data = errors.get(
+            'non_utf8_data', Error('POST-ed data is not UTF-8 text.'))
+        self.non_json_data = errors.get(
+            'non_json_data', Error('Text is not valid JSON.'))
+        self.no_dom_specified = errors.get(
+            'no_dom_specified', Error('No DOM specified.'))
+        self.invalid_xml_data = errors.get(
+            'invalid_xml_data', Error('Invalid data for XML DOM.'))
 
     @property
     @lru_cache(maxsize=1)
