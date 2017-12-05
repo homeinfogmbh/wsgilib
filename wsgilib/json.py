@@ -17,11 +17,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""Miscellaneous constants and functions."""
+"""JSON related constants and functions."""
 
 from contextlib import suppress
 from datetime import datetime, date, time
-from html import escape as escape_html
+from html import escape
 from json import dumps, loads
 
 from timelib import strpdatetime, strpdate, strptime
@@ -44,7 +44,7 @@ def escape_object(obj):
     """Escapes HTML code withtin the provided object."""
 
     if isinstance(obj, str):
-        return escape_html(obj)
+        return escape(obj)
     elif isinstance(obj, list):
         return [escape_object(item) for item in obj]
     elif isinstance(obj, dict):
