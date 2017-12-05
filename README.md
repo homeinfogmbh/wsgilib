@@ -1,5 +1,5 @@
 # wsgilib
-A simple (U)WSGI framework.
+An object-oriented WSGI framework based on [flask](http://flask.pocoo.org/docs/0.12/).
 
 ## Copyright
 Copyright 2017 HOMEINFO - Digitale Informationssysteme GmbH
@@ -15,47 +15,45 @@ Following are some example use cases.
 
 ### Examples
 #### Simple WSGI application
-A simple WSGI application may be implemented using the `RequestHandler` and a `WsgiApp` using it.
+A simple WSGI application may be implemented using the `Application` class.
 
 The following example shows a trivial WSGI application that will return the UTF-8 String *"Hello world!"* on any HTTP *GET* request.
 
-    from wsgilib import OK, RequestHandler, WsgiApp
+    from wsgilib import Application, OK
 
+    application = Application('MyApplication')
 
-    class MyHandler(RequestHandler):
-
-        def get(self):
-            return OK('Hello world!')
-
-
-    application = WsgiApp(MyHandler)
+    @application.route('/')
+    def hello_world(self):
+        return OK('Hello world!')
 
 
 #### ReST Application
-For applications using **Re**presentational **S**tate **T**ransfer the library provides the classes `RestApp`, `RestHandler` and `Router` to handle the respective resources.
+For applications using **Re**presentational **S**tate **T**ransfer you can use the same routing idioms as with *flask*.
 
     from math import factorial
-    from wsgilib import OK, Router, RestHandler, RestApp
+    from wsgilib import Application, Error, OK
 
+    APPLICATION = Application('factorial')
 
-    ROUTER = Router()
+    @APPLICATION.route('/factorial/<int:value>')
+    def get_factorial(value):
+        """Calculates and returns the factorial of the given number."""
+        if value > 100:
+            raise Error(f'Value too large: {value}.')
 
-
-    @ROUTER.route('/factorial/<value:int>')
-    class MyHandler(RestHandler):
-
-        def get(self):
-            value = self.vars['value']
-            return OK('{}! = {}'.format(value, factorial(value)))
-
-
-    application = RestApp(ROUTER)
+        return OK(f'{value}! = {factorial(value)}')
 
 The above ReST application will return the following response:
-* `http://<host>/factorial/12` → *"12! = 479001600"*
+* `http://<host>/factorial/12` → *12! = 479001600*
 
 ### Return values
 The framework provides return value classes to represent common data types.
+
+#### Response
+The class `Response` provides the very basic interface to handle responses from the server.  
+It is a composition of the `flask.Response` and `Exception` class.  
+All `Response` instances thus can be *risen* as exceptions in the code, ultimately being handled as return values by the respective `Application`.
 
 #### Plain Text
 To return simple plain text responses, there is the class `PlainText`.
