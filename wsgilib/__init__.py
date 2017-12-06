@@ -26,7 +26,6 @@ from traceback import format_exc
 from flask import request, Response as Response_, Flask
 from pyxb import PyXBException
 
-from fancylog import LoggingClass
 from mimeutil import mimetype as get_mimetype
 from xmldom import DisabledValidation
 
@@ -287,15 +286,14 @@ class PostData:
             raise self.invalid_xml_data from None
 
 
-class Application(Flask, LoggingClass):
+class Application(Flask):
     """Extended web application basis."""
 
-    def __init__(self, *args, logger=None, debug=False, **kwargs):
+    def __init__(self, *args, **kwargs):
         """Invokes super constructor and adds exception handlers."""
-        Flask.__init__(self, *args, **kwargs)
-        LoggingClass.__init__(self, logger=logger, debug=debug)
+        super().__init__(*args, **kwargs)
         self.errorhandler(Response)(lambda response: response)
 
         if debug:
-            self.errorhandler(Exception)(lambda: InternalServerError(
+            self.errorhandler(Exception)(lambda _: InternalServerError(
                 msg=format_exc()))
