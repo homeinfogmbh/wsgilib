@@ -129,20 +129,16 @@ class XML(Response):
 class JSON(Response):
     """A JSON response."""
 
-    def __init__(self, dictionary, escape=True, strip=False, status=200,
-                 indent=None):
+    def __init__(self, dictionary, strip=False, status=200, indent=None):
         """Initializes raiseable WSGI response with
         the given dictionary d as JSON response.
         """
         if strip:
             dictionary = strip_json(dictionary)
 
-        if escape:
-            dictionary = escape_object(dictionary)
-
         super().__init__(
-            msg=json_dumps(dictionary, indent=indent), status=status,
-            mimetype='application/json', encoding=True)
+            msg=json_dumps(escape_object(dictionary), indent=indent),
+            status=status, mimetype='application/json', encoding=True)
 
 
 class Binary(Response):
