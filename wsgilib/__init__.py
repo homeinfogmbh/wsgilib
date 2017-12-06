@@ -232,9 +232,8 @@ class InternalServerError(Response):
 class PostData:
     """Represents POST-ed data."""
 
-    def __init__(self, dom=None, **errors):
+    def __init__(self, **errors):
         """Sets the WSGI input and optional error handlers."""
-        self.dom = dom
         self.file_too_large = errors.get(
             'file_too_large', Error('File too large.', status=507))
         self.no_data_provided = errors.get(
@@ -243,8 +242,6 @@ class PostData:
             'non_utf8_data', Error('POST-ed data is not UTF-8 text.'))
         self.non_json_data = errors.get(
             'non_json_data', Error('Text is not valid JSON.'))
-        self.no_dom_specified = errors.get(
-            'no_dom_specified', Error('No DOM specified.'))
         self.invalid_xml_data = errors.get(
             'invalid_xml_data', Error('Invalid data for XML DOM.'))
 
@@ -274,14 +271,10 @@ class PostData:
         except ValueError:
             raise self.non_json_data from None
 
-    @property
-    def xml(self):
+    def xml(self, dom):
         """Loads XML data into the provided DOM model."""
-        if self.dom is None:
-            raise self.no_dom_specified
-
         try:
-            return self.dom.CreateFromDocument(self.text)
+            return dom.CreateFromDocument(self.text)
         except PyXBException:
             raise self.invalid_xml_data from None
 
