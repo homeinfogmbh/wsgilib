@@ -282,7 +282,7 @@ class PostData:
 class Application(Flask):
     """Extended web application basis."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, debug=False, **kwargs):
         """Invokes super constructor and adds exception handlers."""
         super().__init__(*args, **kwargs)
         self.errorhandler(Response)(lambda response: response)
