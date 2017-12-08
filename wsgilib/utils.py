@@ -6,9 +6,11 @@ from functools import update_wrapper
 from flask import make_response, request, current_app
 
 
-__all__ = ['crossdomain']
-
+__all__ = ['crossdomain', 'add_response_headers', 'cors']
 __credits__ = 'http://flask.pocoo.org/snippets/56/'
+
+
+CORS_METHODS = ('GET', 'POST','PUT', 'PATCH', 'DELETE', 'OPTIONS')
 
 
 def crossdomain(origin=None, methods=None, headers=None,
@@ -58,3 +60,32 @@ def crossdomain(origin=None, methods=None, headers=None,
         return update_wrapper(wrapped_function, function)
 
     return decorator
+
+
+def add_response_headers(headers={}):
+    """This decorator adds the headers passed in to the response."""
+
+    def decorator(function):
+        """Decorates the respective function."""
+
+        @wraps(function)
+        def decorated_function(*args, **kwargs):
+            """Wraps the respective function."""
+            resp = make_response(function(*args, **kwargs))
+
+            for header, value in headers.items():
+                resp.headers[header] = value
+
+            return resp
+
+        return decorated_function
+
+    return decorator
+
+
+def cors(origin='*', methods=CORS_METHODS):
+    """Sets CORS headers."""
+
+    return add_response_headers(headers={
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Methods': ', '.join(methods)})
