@@ -1,7 +1,7 @@
 """Additional utilities."""
 
 from datetime import timedelta
-from functools import update_wrapper
+from functools import update_wrapper, wraps
 
 from flask import make_response, request, current_app
 
