@@ -298,7 +298,7 @@ class Application(Flask):
 
     def __init__(self, *args, cors=False, debug=False, **kwargs):
         """Invokes super constructor and adds exception handlers."""
-        super().__init__(*args, debug=debug, **kwargs)
+        super().__init__(*args, **kwargs)
         self.errorhandler(Response)(lambda response: response)
 
         if debug:
