@@ -30,8 +30,10 @@ from mimeutil import mimetype as get_mimetype
 from xmldom import DisabledValidation
 
 from wsgilib.json import strip_json, escape_object, json_dumps, json_loads
+from wsgilib.utils import crossdomain
 
 __all__ = [
+    'crossdomain',
     'Response',
     'PlainText',
     'Error',
