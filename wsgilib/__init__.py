@@ -21,21 +21,27 @@
 
 from functools import lru_cache
 from hashlib import sha256
+from sys import stderr
 from traceback import format_exc
 
 from flask import request, Response as Response_, Flask
+
+try:
+    from flask_cors import CORS
+except ImportError:
+    print('flask_cors not installed. CORS unavailable.',
+          file=stderr, flush=True)
+    def CORS(app=None, **kwargs):
+        pass
+
 from pyxb import PyXBException
 
 from mimeutil import mimetype as get_mimetype
 from xmldom import DisabledValidation
 
 from wsgilib.json import strip_json, escape_object, json_dumps, json_loads
-from wsgilib.utils import crossdomain, add_response_headers, cors
 
 __all__ = [
-    'crossdomain',
-    'add_response_headers',
-    'cors',
     'Response',
     'PlainText',
     'Error',
@@ -290,11 +296,14 @@ class PostData:
 class Application(Flask):
     """Extended web application basis."""
 
-    def __init__(self, *args, debug=False, **kwargs):
+    def __init__(self, *args, cors=False, debug=False, **kwargs):
         """Invokes super constructor and adds exception handlers."""
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, debug=debug, **kwargs)
         self.errorhandler(Response)(lambda response: response)
 
         if debug:
             self.errorhandler(Exception)(lambda _: InternalServerError(
                 msg=format_exc()))
+
+        if cors:
+            CORS(self)
