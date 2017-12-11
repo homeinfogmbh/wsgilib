@@ -260,7 +260,6 @@ class PostData:
             'invalid_xml_data', Error('Invalid data for XML DOM.'))
 
     @property
-    @lru_cache(maxsize=1)
     def bytes(self):
         """Reads and returns the POST-ed data."""
         try:
@@ -269,7 +268,6 @@ class PostData:
             raise self.file_too_large from None
 
     @property
-    @lru_cache(maxsize=1)
     def text(self):
         """Returns UTF-8 text."""
         try:
