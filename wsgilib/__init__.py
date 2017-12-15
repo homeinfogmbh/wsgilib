@@ -31,15 +31,14 @@ try:
 except ImportError:
     print('flask_cors not installed. CORS unavailable.',
           file=stderr, flush=True)
-    def CORS(app=None, **kwargs):
-        pass
 
 from pyxb import PyXBException
 
 from mimeutil import mimetype as get_mimetype
 from xmldom import DisabledValidation
 
-from wsgilib.json import strip_json, escape_object, json_dumps, json_loads
+from wsgilib.converters import bytes_to_text, text_to_json, text_to_dom
+from wsgilib.json import strip_json, escape_object, json_dumps
 
 __all__ = [
     'Response',
@@ -265,30 +264,30 @@ class PostData:
         try:
             return request.get_data()
         except MemoryError:
-            raise self.file_too_large from None
+            raise self.file_too_large
 
     @property
     def text(self):
         """Returns UTF-8 text."""
         try:
-            return self.bytes.decode()
+            return bytes_to_text(self.bytes)
         except UnicodeDecodeError:
-            raise self.non_utf8_data from None
+            raise self.non_utf8_data
 
     @property
     def json(self):
         """Returns a JSON-ish dictionary."""
         try:
-            return json_loads(self.text)
+            return text_to_json(self.text)
         except ValueError:
-            raise self.non_json_data from None
+            raise self.non_json_data
 
     def xml(self, dom):
         """Loads XML data into the provided DOM model."""
         try:
-            return dom.CreateFromDocument(self.text)
+            return text_to_dom(dom, self.text)
         except PyXBException:
-            raise self.invalid_xml_data from None
+            raise self.invalid_xml_data
 
 
 class Application(Flask):
