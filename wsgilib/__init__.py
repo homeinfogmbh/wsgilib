@@ -168,50 +168,45 @@ class Binary(Response):
         self.filename = filename
 
     @property
-    def etags(self):
-        """Returns all e-tags."""
-        for key, value in self.headers:
-            if key == 'ETag':
-                yield value
+    def response_checksum(self):
+        """Returns the SHA-256 checksum of the response."""
+        if self.response:
+            sha256sum = sha256()
+
+            for response in self.response:
+                sha256sum.update(response)
+
+            return sha256sum.hexdigest()
+
+        raise ValueError('No response available to hash.')
 
     @property
     def etag(self):
         """Returns the e-tag."""
-        for etag in self.etags:
-            return etag
+        return self.headers.get('ETag')
 
     @etag.setter
     def etag(self, etag):
         """Sets the e-tag."""
-        if etag is not None:
+        if etag is None:
+            self.headers.pop('ETag', None)
+        else:
             if etag is True:
-                try:
-                    etag = sha256(self.response[0]).hexdigest()
-                except IndexError:
-                    raise ValueError('No response available to hash.')
+                etag = self.response_checksum
 
-            self.headers.append(('ETag', etag))
-
-    @etag.deleter
-    def etag(self):
-        """Deletes all ETags."""
-        self.headers = [
-            (key, value) for key, value in self.headers if key != 'ETag']
-
-    @property
-    def filenames(self):
-        """Yields all file names."""
-        for key, value in self.headers:
-            if key == 'Content-Disposition':
-                _, filename = value.split('; ')
-                _, filename, _ = filename.split('"')
-                yield filename
+            self.headers['ETag'] = etag
 
     @property
     def filename(self):
-        """Returns the file name."""
-        for filename in self.filenames:
-            return filename
+        """Yields all file names."""
+        try:
+            content_disposition = self.headers['Content-Disposition']
+        except KeyError:
+            return None
+
+        _, filename = content_disposition.split('; ')
+        _, filename, _ = filename.split('"')
+        return filename
 
     @filename.setter
     def filename(self, filename):
@@ -220,9 +215,11 @@ class Binary(Response):
         Setting the file name to None will also remove
         any Content-Disposition header field.
         """
-        if filename is not None:
+        if filename is None:
+            self.headers.pop('Content-Disposition', None)
+        else:
             content_disposition = 'attachment; filename="{}"'.format(filename)
-            self.headers.append(('Content-Disposition', content_disposition))
+            self.headers['Content-Disposition'] = content_disposition
 
     @filename.deleter
     def filename(self):
