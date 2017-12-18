@@ -57,10 +57,11 @@ __all__ = [
 class Response(Exception, Response_):
     """An WSGI error message."""
 
-    def __init__(self, msg='', status=200, mimetype='text/plain', cors=True,
+    def __init__(self, msg=None, status=200, mimetype='text/plain', cors=True,
                  charset='utf-8', encoding=True, headers=None):
         """Generates an error WSGI response."""
         Exception.__init__(self, msg)
+        msg = msg or ''
 
         if encoding:
             msg = msg.encode(encoding=charset)
@@ -96,7 +97,7 @@ class Error(PlainText):
     def __init__(self, msg=None, status=400, charset='utf-8'):
         """Returns a plain text error response."""
         if 400 <= status < 600:
-            super().__init__(msg=msg, status=status, charset=charset)
+            super().__init__(msg, status=status, charset=charset)
         else:
             raise ValueError('Not an error status: {}'.format(status))
 
