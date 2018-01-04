@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 """An object-oriented WSGI micro framework based on Flask."""
 
+from contextlib import suppress
 from functools import lru_cache
 from hashlib import sha256
 from sys import stderr
@@ -302,3 +303,17 @@ class Application(Flask):
 
         if cors:
             CORS(self)
+
+    @property
+    def routes(self):
+        """Yields all routes."""
+        pass
+
+    @routes.setter
+    def routes(self, routes):
+        """Adds the respective routes."""
+        for methods, route, function in routes:
+            with suppress(AttributeError):
+                methods = methods.split()
+
+            self.route(route, methods=methods)(function)
