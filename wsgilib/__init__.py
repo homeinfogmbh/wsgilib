@@ -316,4 +316,5 @@ class Application(Flask):
             with suppress(AttributeError):
                 methods = methods.split()
 
+            print('Adding route:', methods, route, function)
             self.route(route, methods=methods)(function)
