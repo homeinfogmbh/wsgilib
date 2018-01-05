@@ -15,7 +15,7 @@ Following are some example use cases.
 
 ### Examples
 The `Application` class takes two special parameters that `Flask` does not.  
-The flag `cors=False` causes `flask_cors.CORS` to be applied to itself if set to `True`.  
+The flag `cors=False` causes `flask_cors.CORS` to be applied to itself if set to `True`, enabling [CORS](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing).  
 The flag `debug=False` adds an error handler for all `Exception`s to raise an `InternalServerError` with a full stack trace if set to `True`.
 
 #### Simple WSGI application
