@@ -310,6 +310,6 @@ class Application(Flask):
             with suppress(AttributeError):
                 methods = methods.split()
 
-            endpoint = hash((methods, route, function))
+            endpoint = hash((tuple(methods), route, function))
             print('Adding route:', route, endpoint, function, methods)
             self.add_url_rule(route, endpoint, function, methods=methods)
