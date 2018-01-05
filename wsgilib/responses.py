@@ -24,7 +24,6 @@ from hashlib import sha256
 from flask import Response as Response_
 
 from mimeutil import mimetype as get_mimetype
-from xmldom import DisabledValidation
 
 from wsgilib.json import strip_json, escape_object, json_dumps
 
@@ -41,11 +40,11 @@ __all__ = [
 
 
 class Response(Exception, Response_):
-    """An WSGI error message."""
+    """A raisable WSGI response."""
 
     def __init__(self, msg=None, status=200, mimetype='text/plain',
                  charset='utf-8', encoding=True, headers=None):
-        """Generates an error WSGI response."""
+        """Initializes Exception and Response superclasses."""
         Exception.__init__(self, msg)
         msg = msg or ''
 
@@ -108,17 +107,11 @@ class HTML(Response):
 class XML(Response):
     """An XML response."""
 
-    def __init__(self, dom, validate=True, status=200, charset='utf-8'):
+    def __init__(self, dom, status=200, charset='utf-8'):
         """Sets the dom and inherited responde attributes."""
-        if validate:
-            xml_text = dom.toxml(encoding=charset)
-        else:
-            with DisabledValidation():
-                xml_text = dom.toxml(encoding=charset)
-
         super().__init__(
-            msg=xml_text, status=status, mimetype='application/xml',
-            charset=charset, encoding=None)
+            msg=dom.toxml(encoding=charset), status=status,
+            mimetype='application/xml', charset=charset, encoding=None)
 
 
 class JSON(Response):
@@ -204,19 +197,10 @@ class Binary(Response):
             content_disposition = 'attachment; filename="{}"'.format(filename)
             self.headers['Content-Disposition'] = content_disposition
 
-    @filename.deleter
-    def filename(self):
-        """Deletes all file names."""
-        self.headers = [
-            (key, value) for key, value in self.headers
-            if key != 'Content-Disposition']
-
 
 class InternalServerError(Response):
     """A code-500 WSGI response."""
 
     def __init__(self, msg='Internal Server Error.', charset='utf-8'):
-        """Indicates an internal server error
-        CORS is enabled by default.
-        """
+        """Indicates an internal server error."""
         super().__init__(msg=msg, status=500, charset=charset)
