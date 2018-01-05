@@ -304,17 +304,10 @@ class Application(Flask):
         if cors:
             CORS(self)
 
-    @property
-    def routes(self):
-        """Yields all routes."""
-        raise NotImplementedError()
-
-    @routes.setter
-    def routes(self, routes):
+    def set_endpoint(self, endpoint, routes):
         """Adds the respective routes."""
         for methods, route, function in routes:
             with suppress(AttributeError):
                 methods = methods.split()
 
-            print('Adding route:', methods, route, function)
-            self.route(route, methods=methods)(function)
+            self.add_url_rule(route, endpoint, function, methods=methods)
