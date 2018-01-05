@@ -306,10 +306,8 @@ class Application(Flask):
 
     def add_routes(self, routes):
         """Adds the respective routes."""
-        for methods, route, function in routes:
+        for methods, route, function, endpoint in routes:
             with suppress(AttributeError):
                 methods = methods.split()
 
-            endpoint = ' '.join((str(methods), route, function.__name__))
-            print('Adding route:', route, endpoint, function, methods)
             self.add_url_rule(route, endpoint, function, methods=methods)
