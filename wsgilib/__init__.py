@@ -307,7 +307,7 @@ class Application(Flask):
     @property
     def routes(self):
         """Yields all routes."""
-        pass
+        raise NotImplementedError()
 
     @routes.setter
     def routes(self, routes):
