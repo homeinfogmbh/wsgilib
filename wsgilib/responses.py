@@ -43,7 +43,7 @@ __all__ = [
 class Response(Exception, Response_):
     """An WSGI error message."""
 
-    def __init__(self, msg=None, status=200, mimetype='text/plain', cors=True,
+    def __init__(self, msg=None, status=200, mimetype='text/plain',
                  charset='utf-8', encoding=True, headers=None):
         """Generates an error WSGI response."""
         Exception.__init__(self, msg)
@@ -61,10 +61,6 @@ class Response(Exception, Response_):
             Response_.__init__(
                 self, response=msg, status=status, headers=headers,
                 mimetype=mimetype)
-
-        if cors:
-            self.headers['Access-Control-Allow-Origin'] = '*'
-            self.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
 
 
 class PlainText(Response):
