@@ -304,9 +304,9 @@ class Application(Flask):
         if cors:
             CORS(self)
 
-    def add_routes(self, routes):
-        """Adds the respective routes."""
-        for methods, route, function, endpoint in routes:
+    def add_endpoints(self, endpoints):
+        """Adds the respective endpoints."""
+        for endpoint, (methods, route, function) in endpoints.items():
             with suppress(AttributeError):
                 methods = methods.split()
 
