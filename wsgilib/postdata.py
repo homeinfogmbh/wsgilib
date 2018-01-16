@@ -50,11 +50,15 @@ def text_to_json(text):
     return json_loads(text)
 
 
-@lru_cache(maxsize=1)
 def text_to_dom(dom, text):
     """Converts text into a JSON object."""
 
-    return dom.CreateFromDocument(text)
+    @lru_cache(maxsize=1)
+    def load_dom(xml_text):
+        """Actually loads the XML text into the DOM."""
+        return dom.CreateFromDocument(xml_text)
+
+    return load_dom(text)
 
 
 class BytesParser:
