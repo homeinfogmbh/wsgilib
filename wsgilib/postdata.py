@@ -57,8 +57,8 @@ def text_to_dom(dom, text):
     return dom.CreateFromDocument(text)
 
 
-class PostData:
-    """Represents POST-ed data."""
+class BytesParser:
+    """File that has several parsing properties."""
 
     def __init__(self, **errors):
         """Sets the WSGI input and optional error handlers."""
@@ -75,11 +75,8 @@ class PostData:
 
     @property
     def bytes(self):
-        """Reads and returns the POST-ed data."""
-        try:
-            return request.get_data()
-        except MemoryError:
-            raise self.file_too_large
+        """Returns bytes."""
+        raise NotImplementedError()
 
     @property
     def text(self):
@@ -103,3 +100,53 @@ class PostData:
             return text_to_dom(dom, self.text)
         except PyXBException:
             raise self.invalid_xml_data
+
+
+class PostData(BytesParser):
+    """Represents POST-ed data."""
+
+    def __iter__(self):
+        """Yields the respective files, iff any."""
+        return self.files
+
+    def __bytes__(self):
+        """Returns the respective bytes."""
+        return self.bytes
+
+    @property
+    def files(self):
+        """Yields the respective files, iff any."""
+        for name, file_storage in request.files.items():
+            yield PostFile(
+                name, file_storage, file_too_large=self.file_too_large,
+                no_data_provided=self.no_data_provided,
+                non_utf8_data=self.non_utf8_data,
+                non_json_data=self.non_json_data,
+                invalid_xml_data=self.invalid_xml_data)
+
+    @property
+    def bytes(self):
+        """Reads and returns the POST-ed data."""
+        try:
+            return request.get_data()
+        except MemoryError:
+            raise self.file_too_large
+
+
+class PostFile(BytesParser):
+    """Represents a POSTed file."""
+
+    def __init__(self, name, file_storage, **errors):
+        """Sets name and file."""
+        super().__init__(**errors)
+        self.name = name
+        self.file_storage = file_storage
+
+    def __bytes__(self):
+        """Returns the respective bytes."""
+        return self.bytes
+
+    @property
+    def bytes(self):
+        """Returns the respective bytes."""
+        return self.file_storage.stream.read()
