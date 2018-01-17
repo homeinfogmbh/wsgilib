@@ -94,13 +94,14 @@ class PostData(BytesParser):
     @property
     def files(self):
         """Yields the respective files, iff any."""
-        for name, file_storage in request.files.items():
-            yield PostFile(
-                name, file_storage, file_too_large=self.file_too_large,
+        return {
+            name: PostFile(
+                file_storage, file_too_large=self.file_too_large,
                 no_data_provided=self.no_data_provided,
                 non_utf8_data=self.non_utf8_data,
                 non_json_data=self.non_json_data,
                 invalid_xml_data=self.invalid_xml_data)
+            for name, file_storage in request.files.items()}
 
     @property
     def bytes(self):
@@ -114,10 +115,9 @@ class PostData(BytesParser):
 class PostFile(BytesParser):
     """Represents a POSTed file."""
 
-    def __init__(self, name, file_storage, **errors):
+    def __init__(self, file_storage, **errors):
         """Sets name and file."""
         super().__init__(**errors)
-        self.name = name
         self.file_storage = file_storage
 
     def __bytes__(self):
@@ -127,4 +127,7 @@ class PostFile(BytesParser):
     @property
     def bytes(self):
         """Returns the respective bytes."""
-        return self.file_storage.stream.read()
+        try:
+            return self.file_storage.stream.read()
+        except MemoryError:
+            raise self.file_too_large
