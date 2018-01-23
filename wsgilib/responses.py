@@ -132,7 +132,7 @@ class JSON(Response):
 class Binary(Response):
     """A binary reply."""
 
-    def __init__(self, data, status=200, etag=None, filename=None):
+    def __init__(self, data, status=200, etag=False, filename=None):
         """Initializes raiseable WSGI response
         with binary data and an optional etag.
         """
@@ -165,11 +165,10 @@ class Binary(Response):
     def etag(self, etag):
         """Sets the e-tag."""
         if etag is None:
+            self.headers['ETag'] = self.response_checksum
+        elif not etag:
             self.headers.pop('ETag', None)
         else:
-            if etag is True:
-                etag = self.response_checksum
-
             self.headers['ETag'] = etag
 
     @property
