@@ -163,7 +163,10 @@ class Binary(Response):
 
     @etag.setter
     def etag(self, etag):
-        """Sets the e-tag."""
+        """Sets the e-tag.
+        If etag is None, the etag will default
+        to the content's SHA-256 checksum.
+        """
         if etag is None:
             self.headers['ETag'] = self.response_checksum
         elif not etag:
