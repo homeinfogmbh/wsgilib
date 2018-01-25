@@ -23,6 +23,7 @@ from contextlib import suppress
 from datetime import datetime, date, time
 from html import escape
 from json import dumps, loads
+from types import GeneratorType
 
 from timelib import strpdatetime, strpdate, strptime
 
@@ -49,6 +50,8 @@ def json_encode(obj):
 
     if isinstance(obj, (datetime, date, time)):
         return obj.isoformat()
+    elif isinstance(obj, GeneratorType):
+        return tuple(obj)
 
     return obj
 
