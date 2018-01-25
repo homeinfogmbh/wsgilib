@@ -50,7 +50,7 @@ def json_encode(obj):
 
     if isinstance(obj, (datetime, date, time)):
         return obj.isoformat()
-    elif isinstance(obj, GeneratorType):
+    elif isinstance(obj, (set, GeneratorType)):
         return tuple(obj)
 
     return obj
