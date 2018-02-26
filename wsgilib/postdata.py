@@ -41,15 +41,15 @@ class BytesParser:
     def __init__(self, **errors):
         """Sets the WSGI input and optional error handlers."""
         self.file_too_large = errors.get(
-            'file_too_large', Error('File too large.', status=507))
+            'file_too_large', lambda: Error('File too large.', status=507))
         self.no_data_provided = errors.get(
-            'no_data_provided', Error('No data provided.'))
+            'no_data_provided', lambda: Error('No data provided.'))
         self.non_utf8_data = errors.get(
-            'non_utf8_data', Error('POST-ed data is not UTF-8 text.'))
+            'non_utf8_data', lambda: Error('POST-ed data is not UTF-8 text.'))
         self.non_json_data = errors.get(
-            'non_json_data', Error('Text is not valid JSON.'))
+            'non_json_data', lambda: Error('Text is not valid JSON.'))
         self.invalid_xml_data = errors.get(
-            'invalid_xml_data', Error('Invalid data for XML DOM.'))
+            'invalid_xml_data', lambda: Error('Invalid data for XML DOM.'))
 
     @property
     def bytes(self):
@@ -62,7 +62,7 @@ class BytesParser:
         try:
             return self.bytes.decode()
         except UnicodeDecodeError:
-            raise self.non_utf8_data
+            raise self.non_utf8_data()
 
     @property
     def json(self):
@@ -70,14 +70,14 @@ class BytesParser:
         try:
             return json_loads(self.text)
         except ValueError:
-            raise self.non_json_data
+            raise self.non_json_data()
 
     def xml(self, dom):
         """Loads XML data into the provided DOM model."""
         try:
             return dom.CreateFromDocument(self.text)
         except PyXBException:
-            raise self.invalid_xml_data
+            raise self.invalid_xml_data()
 
 
 class PostData(BytesParser):
@@ -109,7 +109,7 @@ class PostData(BytesParser):
         try:
             return request.get_data()
         except MemoryError:
-            raise self.file_too_large
+            raise self.file_too_large()
 
 
 class PostFile(BytesParser):
@@ -130,4 +130,4 @@ class PostFile(BytesParser):
         try:
             return self.file_storage.stream.read()
         except MemoryError:
-            raise self.file_too_large
+            raise self.file_too_large()
