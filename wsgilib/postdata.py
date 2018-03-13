@@ -19,6 +19,7 @@
 # THE SOFTWARE.
 """Post data handling."""
 
+from functools import partial
 from logging import basicConfig, getLogger
 
 from flask import request
@@ -35,21 +36,23 @@ from wsgilib.responses import Error
 __all__ = ['PostData']
 
 
-class BytesParser:
+class _BytesParser:
     """File that has several parsing properties."""
 
-    def __init__(self, **errors):
+    def __init__(self, *, file_too_large=None, no_data_provided=None,
+                 non_utf8_data=None, non_json_data=None,
+                 invalid_xml_data=None):
         """Sets the WSGI input and optional error handlers."""
-        self.file_too_large = errors.get(
-            'file_too_large', lambda: Error('File too large.', status=507))
-        self.no_data_provided = errors.get(
-            'no_data_provided', lambda: Error('No data provided.'))
-        self.non_utf8_data = errors.get(
-            'non_utf8_data', lambda: Error('POST-ed data is not UTF-8 text.'))
-        self.non_json_data = errors.get(
-            'non_json_data', lambda: Error('Text is not valid JSON.'))
-        self.invalid_xml_data = errors.get(
-            'invalid_xml_data', lambda: Error('Invalid data for XML DOM.'))
+        self.file_too_large = file_too_large or partial(
+            Error, 'File too large.', status=507)
+        self.no_data_provided = no_data_provided or partial(
+            Error, 'No data provided.')
+        self.non_utf8_data = non_utf8_data or partial(
+            Error, 'POST-ed data is not UTF-8 text.')
+        self.non_json_data = non_json_data or partial(
+            Error, 'Text is not valid JSON.')
+        self.invalid_xml_data = invalid_xml_data or partial(
+            Error, 'Invalid data for XML DOM.')
 
     @property
     def bytes(self):
@@ -66,7 +69,7 @@ class BytesParser:
 
     @property
     def json(self):
-        """Returns a JSON-ish dictionary."""
+        """Returns a JSON-ish value."""
         try:
             return json_loads(self.text)
         except ValueError:
@@ -80,7 +83,7 @@ class BytesParser:
             raise self.invalid_xml_data()
 
 
-class PostData(BytesParser):
+class PostData(_BytesParser):
     """Represents POST-ed data."""
 
     def __iter__(self):
@@ -95,7 +98,7 @@ class PostData(BytesParser):
     def files(self):
         """Yields the respective files, iff any."""
         return {
-            name: PostFile(
+            name: _PostFile(
                 file_storage, file_too_large=self.file_too_large,
                 no_data_provided=self.no_data_provided,
                 non_utf8_data=self.non_utf8_data,
@@ -112,7 +115,7 @@ class PostData(BytesParser):
             raise self.file_too_large()
 
 
-class PostFile(BytesParser):
+class _PostFile(_BytesParser):
     """Represents a POSTed file."""
 
     def __init__(self, file_storage, **errors):
