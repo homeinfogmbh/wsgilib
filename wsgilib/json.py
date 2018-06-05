@@ -76,10 +76,8 @@ def json_decode(dictionary):
 
     for key, value in dictionary.items():
         if isinstance(value, str):
-            try:
+            with suppress(ValueError):
                 dictionary[key] = parse_datetime_date_or_time(value)
-            except ValueError:
-                dictionary[key] = escape(value)
 
     return dictionary
 
