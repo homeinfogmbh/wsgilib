@@ -79,9 +79,7 @@ def json_decode(dictionary):
             try:
                 dictionary[key] = parse_datetime_date_or_time(value)
             except ValueError:
-                pass
-            else:
-                continue
+                dictionary[key] = escape(value)
 
     return dictionary
 
