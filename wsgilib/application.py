@@ -39,9 +39,14 @@ __all__ = ['Application']
 class Application(Flask):
     """Extended web application basis."""
 
-    def __init__(self, *args, cors=False, debug=False, **kwargs):
+    def __init__(self, *args, cors=False, debug=False, errorhandlers=(),
+                 **kwargs):
         """Invokes super constructor and adds exception handlers."""
         super().__init__(*args, **kwargs)
+
+        for exception, function in errorhandlers:
+            self.errorhandler(exception)(function)
+
         self.errorhandler(Response)(lambda response: response)
 
         if debug:
