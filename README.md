@@ -96,7 +96,7 @@ To automatically return JSON responses from dictionaries, there is a class `JSON
         return JSON(dictionary)
 
 #### Binaries
-To return binary data, the class `Binary` uses the library [mimeutil](https://github.com/HOMEINFO/mimeutil) to try to detect the appropriate MIME type:
+To return binary data, the class `Binary` uses the library [mimeutil](https://gitlab.com/HOMEINFO/mimeutil) to try to detect the appropriate MIME type:
 
     @APPLICATION.route('/binary')
     def get_binary():
@@ -111,5 +111,5 @@ To return binary data, the class `Binary` uses the library [mimeutil](https://gi
 For debugging purposes or to detect runtime errors within a productive system, the class `InternalServerError` can be used.
 
 ## Dependencies
-* [mimeutil](https://github.com/HOMEINFO/mimeutil)
-* [timelib](https://github.com/HOMEINFO/timelib)
+* [mimeutil](https://gitlab.com/HOMEINFO/mimeutil)
+* [timelib](https://gitlab.com/HOMEINFO/timelib)
