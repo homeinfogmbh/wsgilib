@@ -25,7 +25,7 @@ from html import escape
 from json import dumps, loads
 from types import GeneratorType
 
-from timelib import strpdatetime, strpdate, strptime
+from timelib import DATETIME_FORMATS, strpdate, strptime, strpdatetime
 
 
 __all__ = ['escape_object', 'json_dumps', 'json_loads', 'strip_json']
@@ -60,7 +60,7 @@ def parse_datetime_date_or_time(string):
     """Parses datetime, date or time value of the respective string."""
 
     with suppress(ValueError):
-        return strpdatetime(string)
+        return strpdatetime(string, formats=DATETIME_FORMATS)
 
     with suppress(ValueError):
         return strpdate(string)
