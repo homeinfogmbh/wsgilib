@@ -110,9 +110,14 @@ class PostData(_BytesParser):
     def bytes(self):
         """Reads and returns the POST-ed data."""
         try:
-            return request.get_data()
+            data = request.get_data()
         except MemoryError:
             raise self.file_too_large()
+
+        if not data:
+            raise self.no_data_provided()
+
+        return data
 
 
 class _PostFile(_BytesParser):
@@ -131,6 +136,11 @@ class _PostFile(_BytesParser):
     def bytes(self):
         """Returns the respective bytes."""
         try:
-            return self.file_storage.stream.read()
+            data = self.file_storage.stream.read()
         except MemoryError:
             raise self.file_too_large()
+
+        if not data:
+            raise self.no_data_provided()
+
+        return data
