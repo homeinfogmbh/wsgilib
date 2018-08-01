@@ -20,13 +20,11 @@
 """An object-oriented WSGI micro framework based on Flask."""
 
 from wsgilib.application import Application
-from wsgilib.postdata import PostData
 from wsgilib.responses import Response, PlainText, Error, OK, HTML, XML, JSON,\
     Binary, InternalServerError
 
 __all__ = [
     'Application',
-    'PostData',
     'Response',
     'PlainText',
     'Error',
