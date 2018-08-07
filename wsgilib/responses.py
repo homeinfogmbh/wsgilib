@@ -46,6 +46,7 @@ class Response(Exception, Response_):
                  charset='utf-8', encoding=True, headers=None):
         """Initializes Exception and Response superclasses."""
         Exception.__init__(self, msg)
+        self._exceptions = ()
         msg = msg or ''
 
         if encoding:
@@ -60,6 +61,27 @@ class Response(Exception, Response_):
             Response_.__init__(
                 self, response=msg, status=status, headers=headers,
                 mimetype=mimetype)
+
+    def __enter__(self):
+        """Returns itself."""
+        if not self._exceptions:
+            raise TypeError('Handling context without exceptions to convert.')
+
+        return self
+
+    def __exit__(self, typ, value, traceback):
+        """Handles the respective exceptions."""
+        self._exceptions, exceptions = (), self._exceptions
+
+        if exceptions and isinstance(value, exceptions):
+            raise self
+
+    def convert(self, *exceptions):
+        """Prepares the response to convert the specified
+        exceptions to itself when exiting a context.
+        """
+        self._exceptions = exceptions
+        return self
 
 
 class PlainText(Response):
