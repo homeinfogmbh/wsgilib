@@ -1,5 +1,5 @@
 # wsgilib
-An object-oriented WSGI framework based on [flask](http://flask.pocoo.org/docs/0.12/).
+An extended WSGI framework based on [flask](http://flask.pocoo.org/docs/0.12/).
 
 ## Copyright
 Copyright 2017 HOMEINFO - Digitale Informationssysteme GmbH
