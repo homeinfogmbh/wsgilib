@@ -28,7 +28,7 @@ from types import GeneratorType
 from timelib import DATETIME_FORMATS, strpdate, strptime, strpdatetime
 
 
-__all__ = ['escape_object', 'json_dumps', 'json_loads', 'strip_json']
+__all__ = ['escape_object', 'json_dumps', 'json_loads']
 
 
 def escape_object(obj):
@@ -36,11 +36,12 @@ def escape_object(obj):
 
     if isinstance(obj, str):
         return escape(obj)
-    elif isinstance(obj, list):
+
+    if isinstance(obj, list):
         return [escape_object(item) for item in obj]
-    elif isinstance(obj, dict):
-        for key in obj:
-            obj[key] = escape_object(obj[key])
+
+    if isinstance(obj, dict):
+        return {key: escape_object(value) for key, value in obj.items()}
 
     return obj
 
@@ -50,7 +51,8 @@ def json_encode(obj):
 
     if isinstance(obj, (datetime, date, time)):
         return obj.isoformat()
-    elif isinstance(obj, (set, GeneratorType)):
+
+    if isinstance(obj, (set, frozenset, GeneratorType)):
         return tuple(obj)
 
     return obj
@@ -92,50 +94,3 @@ def json_loads(string, *, object_hook=json_decode, **kwargs):
     """Overrides json.loads."""
 
     return loads(string, object_hook=object_hook, **kwargs)
-
-
-def strip_dict(dictionary):
-    """Strips the respective dictionary."""
-
-    result = {}
-
-    for key, value in dictionary.items():
-        if isinstance(value, (dict, list)):
-            stripped = strip_json(value)
-
-            if stripped:
-                result[key] = stripped
-        elif value is None:
-            continue
-        else:
-            result[key] = value
-
-    return result
-
-
-def strip_list(lst):
-    """Strips the respective list."""
-
-    result = []
-
-    for element in lst:
-        if isinstance(element, (dict, list)):
-            stripped = strip_json(element)
-
-            if stripped:
-                result.append(stripped)
-        else:
-            result.append(element)
-
-    return result
-
-
-def strip_json(obj):
-    """Strips empty data from JSON-ish objects."""
-
-    if isinstance(obj, dict):
-        return strip_dict(obj)
-    elif isinstance(obj, list):
-        return strip_list(obj)
-
-    raise ValueError('Object must be dict or list.')
