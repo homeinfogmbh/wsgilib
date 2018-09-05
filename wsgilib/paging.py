@@ -19,26 +19,71 @@
 # THE SOFTWARE.
 """Paging of iterables."""
 
+from collections import namedtuple
+
 from flask import request
 
 
-__all__ = ['browse']
+__all__ = ['PageInfo', 'Browser']
 
 
-def browse(iterable, *, page_arg='page', size_arg='size', default_page=0,
-           default_size=10):
-    """Pages the respective iterable."""
+class PageInfo(namedtuple('PageInfo', ('full_pages', 'remainder'))):
+    """Represents page information."""
 
-    page = int(request.args.get(page_arg, default_page))
-    size = int(request.args.get(size_arg, default_size))
-    first = page * size
-    last = first + size - 1
+    @property
+    def pages(self):
+        """Returns the amount of pages to be expected."""
+        return self.full_pages + self.remainder > 0
 
-    for index, item in enumerate(iterable):
-        if index < first:
-            continue
+    def to_json(self):
+        """Returns a JSON representation of the page information."""
+        return {
+            'fullPages': self.full_pages,
+            'remainder': self.remainder,
+            'pages': self.pages}
 
-        if index > last:
-            break
 
-        yield item
+class Browser:
+    """Page browser."""
+
+    def __init__(self, page_arg='page', size_arg='size', default_page=0,
+                 default_size=10):
+        """Sets the paging configuration."""
+        self.page_arg = page_arg
+        self.size_arg = size_arg
+        self.default_page = default_page
+        self.default_size = default_size
+
+    @property
+    def page(self):
+        """Returns the page."""
+        return int(request.args.get(self.page_arg, self.default_page))
+
+    @property
+    def size(self):
+        """Returns the page size."""
+        return int(request.args.get(self.size_arg, self.default_size))
+
+    def browse(self, iterable):
+        """Pages the respective iterable."""
+        first = self.page * self.size
+        last = first + self.size -1
+
+        for index, item in enumerate(iterable):
+            if index < first:
+                continue
+
+            if index > last:
+                break
+
+            yield item
+
+
+    def pages(self, iterable):
+        """Counts the amount of pages."""
+        items = 0
+
+        for items, _ in enumerate(iterable):
+            pass
+
+        return PageInfo(items // self.size, items % self.size)

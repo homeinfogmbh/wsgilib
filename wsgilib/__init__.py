@@ -20,13 +20,12 @@
 """An object-oriented WSGI micro framework based on Flask."""
 
 from wsgilib.application import Application
-from wsgilib.paging import browse
+from wsgilib.paging import PageInfo, Browser
 from wsgilib.responses import Response, PlainText, Error, OK, HTML, XML, JSON,\
     Binary, InternalServerError
 
 
 __all__ = [
-    'browse',
     'Application',
     'Response',
     'PlainText',
@@ -36,4 +35,6 @@ __all__ = [
     'HTML',
     'XML',
     'JSON',
-    'Binary']
+    'Binary',
+    'PageInfo',
+    'Browser']
