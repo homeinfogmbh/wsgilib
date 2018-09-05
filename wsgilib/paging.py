@@ -35,7 +35,7 @@ def browse(iterable, *, page_arg='page', size_arg='size', default_page=0,
     last = first + size - 1
 
     for index, item in enumerate(iterable):
-        while index < first:
+        if index < first:
             continue
 
         if index > last:
