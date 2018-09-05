@@ -46,13 +46,21 @@ class PageInfo(namedtuple('PageInfo', ('full_pages', 'remainder'))):
 class Browser:
     """Page browser."""
 
-    def __init__(self, page_arg='page', size_arg='size', default_page=0,
-                 default_size=10):
+    def __init__(self, *, page_arg='page', size_arg='size', info_arg='pages',
+                 default_page=0, default_size=10):
         """Sets the paging configuration."""
         self.page_arg = page_arg
         self.size_arg = size_arg
+        self.info_arg = info_arg
         self.default_page = default_page
         self.default_size = default_size
+
+    def __call__(self, iterable):
+        """Returns the browsed real estates or page info."""
+        if self.info:
+            return self.pages(iterable)
+
+        return self.browse(iterable)
 
     @property
     def page(self):
@@ -63,6 +71,11 @@ class Browser:
     def size(self):
         """Returns the page size."""
         return int(request.args.get(self.size_arg, self.default_size))
+
+    @property
+    def info(self):
+        """Returns the page size."""
+        return self.info_arg in request.args
 
     def browse(self, iterable):
         """Pages the respective iterable."""
