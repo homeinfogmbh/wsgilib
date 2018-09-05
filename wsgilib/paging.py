@@ -66,8 +66,9 @@ class Browser:
 
     def browse(self, iterable):
         """Pages the respective iterable."""
-        first = self.page * self.size
-        last = first + self.size -1
+        size = self.size
+        first = self.page * size
+        last = first + size -1
 
         for index, item in enumerate(iterable):
             if index < first:
@@ -81,9 +82,10 @@ class Browser:
 
     def pages(self, iterable):
         """Counts the amount of pages."""
+        size = self.size
         items = 0
 
         for items, _ in enumerate(iterable):
             pass
 
-        return PageInfo(items // self.size, items % self.size)
+        return PageInfo(items // size, items % size)
