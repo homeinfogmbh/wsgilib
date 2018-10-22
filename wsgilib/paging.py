@@ -35,7 +35,7 @@ class PageInfo(namedtuple('PageInfo', ('full_pages', 'remainder'))):
     @property
     def pages(self):
         """Returns the amount of pages to be expected."""
-        return self.full_pages + self.remainder > 0
+        return self.full_pages + (self.remainder > 0)
 
     def to_json(self):
         """Returns a JSON representation of the page information."""
