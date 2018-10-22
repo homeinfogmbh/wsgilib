@@ -100,7 +100,7 @@ class Browser:
         size = self.size
         items = 0
 
-        for items, _ in enumerate(iterable):
+        for items, _ in enumerate(iterable, start=1):
             pass
 
         return PageInfo(items // size, items % size)
