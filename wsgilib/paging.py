@@ -30,6 +30,8 @@ __all__ = ['PageInfo', 'Browser']
 class PageInfo(namedtuple('PageInfo', ('full_pages', 'remainder'))):
     """Represents page information."""
 
+    __slots__ = ()
+
     @property
     def pages(self):
         """Returns the amount of pages to be expected."""
