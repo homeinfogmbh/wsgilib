@@ -49,7 +49,7 @@ The framework provides return value classes to represent common data types.
 #### Response
 The class `Response` provides the very basic interface to handle responses from the server.  
 It is a composition of the `flask.Response` and `Exception` class.  
-All `Response` instances thus can be *risen* as exceptions in the code, ultimately being handled as return values by the respective `Application`.  
+All `Response` instances thus can be *raised* as exceptions in the code, ultimately being handled as return values by the respective `Application`.  
 The default status of `Response` is `200`.
 
 #### Plain Text
