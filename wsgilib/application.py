@@ -39,7 +39,7 @@ __all__ = ['Application']
 class Application(Flask):
     """Extended web application basis."""
 
-    def __init__(self, *args, cors=False, debug=False, errorhandlers=(),
+    def __init__(self, *args, cors=None, debug=False, errorhandlers=(),
                  **kwargs):
         """Invokes super constructor and adds exception handlers."""
         super().__init__(*args, **kwargs)
@@ -54,7 +54,10 @@ class Application(Flask):
                 msg=format_exc()))
 
         if cors:
-            CORS(self)
+            if cors is True:
+                CORS(self)
+            else:
+                CORS(self, **cors)
 
     def add_routes(self, routes):
         """Adds the respective routes."""
