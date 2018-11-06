@@ -3,8 +3,6 @@
 from flask import request
 from werkzeug.local import LocalProxy
 
-from functoolsplus import coerce
-
 
 __all__ = ['ACCEPT', 'LANGUAGES']
 
@@ -24,29 +22,27 @@ def _split_quality(string):
     return (string, quality)
 
 
-@coerce(dict)
-def _get_accept():
+def _dict_from_csv(string):
+    """Returns a dict from comma separated values."""
+
+    return {
+        key: value for item in string.split(',')
+        for key, value in _split_quality(item) if item}
+
+
+def get_accept():
     """Yields accepting types."""
 
-    accept = request.headers.get('Accept', '')
-
-    for item in accept.split(','):
-        if item:
-            yield _split_quality(item)
+    return _dict_from_csv(request.headers.get('Accept', ''))
 
 
-ACCEPT = LocalProxy(_get_accept)
+ACCEPT = LocalProxy(get_accept)
 
 
-@coerce(dict)
-def _get_languages():
+def get_languages():
     """Returns the accepted languages."""
 
-    accept_language = request.headers.get('Accept-Language', '')
-
-    for language in accept_language.split(','):
-        if language:
-            yield _split_quality(language)
+    return _dict_from_csv(request.headers.get('Accept-Language', ''))
 
 
-LANGUAGES = LocalProxy(_get_languages)
+LANGUAGES = LocalProxy(get_languages)
