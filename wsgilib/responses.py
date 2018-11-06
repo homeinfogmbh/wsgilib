@@ -27,6 +27,7 @@ from mimeutil import mimetype as get_mimetype
 
 from wsgilib.json import escape_object, json_dumps
 
+
 __all__ = [
     'Response',
     'PlainText',
