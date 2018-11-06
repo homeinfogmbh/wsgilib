@@ -21,11 +21,21 @@
 
 from wsgilib.application import Application
 from wsgilib.paging import PageInfo, Browser
-from wsgilib.responses import Response, PlainText, Error, OK, HTML, XML, JSON,\
-    Binary, InternalServerError
+from wsgilib.request import ACCEPT, LANGUAGES
+from wsgilib.responses import Response
+from wsgilib.responses import PlainText
+from wsgilib.responses import Error
+from wsgilib.responses import OK
+from wsgilib.responses import HTML
+from wsgilib.responses import XML
+from wsgilib.responses import JSON
+from wsgilib.responses import Binary
+from wsgilib.responses import InternalServerError
 
 
 __all__ = [
+    'ACCEPT',
+    'LANGUAGES',
     'Application',
     'Response',
     'PlainText',
