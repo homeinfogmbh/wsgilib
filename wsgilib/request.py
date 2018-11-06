@@ -26,8 +26,8 @@ def _dict_from_csv(string):
     """Returns a dict from comma separated values."""
 
     return {
-        key: value for item in string.split(',')
-        for key, value in _split_quality(item) if item}
+        key: value for key, value in _split_quality(item)
+        for item in string.split(',') if item}
 
 
 def get_accept():
