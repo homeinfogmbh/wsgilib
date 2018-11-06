@@ -22,12 +22,18 @@ def _split_quality(string):
     return (string, quality)
 
 
+def _split_csv(string):
+    """Yields the respective elements."""
+
+    for item in string.split(','):
+        if item:
+            yield _split_quality(item)
+
+
 def _csv_to_dict(string):
     """Returns a dict from comma separated values."""
 
-    return {
-        key: value for key, value in (
-            _split_quality(item) for item in string.split(',') if item)}
+    return dict(_split_csv(string))
 
 
 def get_accept():
