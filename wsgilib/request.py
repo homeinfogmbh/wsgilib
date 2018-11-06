@@ -9,7 +9,22 @@ from functoolsplus import coerce
 __all__ = ['ACCEPT', 'LANGUAGES']
 
 
-@coerce(frozenset)
+def _split_quality(string):
+    """Splits an optional quality parameter
+    q=<float> from the provided string.
+    """
+
+    try:
+        string, quality = string.split(';')
+    except ValueError:
+        quality = 1
+    else:
+        quality = float(quality[2:])
+
+    return (string, quality)
+
+
+@coerce(dict)
 def _get_accept():
     """Yields accepting types."""
 
@@ -17,13 +32,13 @@ def _get_accept():
 
     for item in accept.split(','):
         if item:
-            yield QualityString.from_string(item)
+            yield _split_quality(item)
 
 
 ACCEPT = LocalProxy(_get_accept)
 
 
-@coerce(frozenset)
+@coerce(dict)
 def _get_languages():
     """Returns the accepted languages."""
 
@@ -31,31 +46,7 @@ def _get_languages():
 
     for language in languages:
         if language:
-            yield QualityString.from_string(language)
+            yield _split_quality(language)
 
 
 LANGUAGES = LocalProxy(_get_languages)
-
-
-class QualityString(str):
-    """A string with relative quality attribute."""
-
-    def __new__(cls, string, quality=None):
-        return super().__new__(cls, string)
-
-    def __init__(self, _, quality=None):
-        """Sets the quality."""
-        super().__init__()
-        self.quality = quality
-
-    @classmethod
-    def from_string(cls, string):
-        """Creates the QualityString from the provided string."""
-        try:
-            string, quality = string.split(';')
-        except ValueError:
-            quality = None
-        else:
-            quality = float(quality[2:])
-
-        return cls(string, quality=quality)
