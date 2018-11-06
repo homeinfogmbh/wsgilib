@@ -22,18 +22,18 @@ def _split_quality(string):
     return (string, quality)
 
 
-def _dict_from_csv(string):
+def _csv_to_dict(string):
     """Returns a dict from comma separated values."""
 
     return {
-        string: quality for sting, quality in (
+        key: value for key, value in (
             _split_quality(item) for item in string.split(',') if item)}
 
 
 def get_accept():
     """Yields accepting types."""
 
-    return _dict_from_csv(request.headers.get('Accept', ''))
+    return _csv_to_dict(request.headers.get('Accept', ''))
 
 
 ACCEPT = LocalProxy(get_accept)
@@ -42,7 +42,7 @@ ACCEPT = LocalProxy(get_accept)
 def get_languages():
     """Returns the accepted languages."""
 
-    return _dict_from_csv(request.headers.get('Accept-Language', ''))
+    return _csv_to_dict(request.headers.get('Accept-Language', ''))
 
 
 LANGUAGES = LocalProxy(get_languages)
