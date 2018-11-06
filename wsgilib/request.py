@@ -42,9 +42,9 @@ ACCEPT = LocalProxy(_get_accept)
 def _get_languages():
     """Returns the accepted languages."""
 
-    languages = request.headers.get('Accept-Language', '').split(',')
+    accept_language = request.headers.get('Accept-Language', '')
 
-    for language in languages:
+    for language in accept_language.split(','):
         if language:
             yield _split_quality(language)
 
