@@ -24,7 +24,7 @@ class Language(str):
     """A language."""
 
     def __new__(cls, string, quality=None):
-        return super().__new__(string)
+        return super().__new__(cls, string)
 
     def __init__(self, _, quality=None):
         """Sets the quality."""
