@@ -30,16 +30,10 @@ def _split_csv(string):
             yield _split_quality(item)
 
 
-def _csv_to_dict(string):
-    """Returns a dict from comma separated values."""
-
-    return dict(_split_csv(string))
-
-
 def get_accept():
     """Yields accepting types."""
 
-    return _csv_to_dict(request.headers.get('Accept', ''))
+    return dict(_split_csv(request.headers.get('Accept', '')))
 
 
 ACCEPT = LocalProxy(get_accept)
@@ -48,7 +42,7 @@ ACCEPT = LocalProxy(get_accept)
 def get_languages():
     """Returns the accepted languages."""
 
-    return _csv_to_dict(request.headers.get('Accept-Language', ''))
+    return dict(_split_csv(request.headers.get('Accept-Language', '')))
 
 
 LANGUAGES = LocalProxy(get_languages)
