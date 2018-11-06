@@ -14,22 +14,13 @@ def _get_accept():
     """Yields accepting types."""
 
     accept = request.headers.get('Accept', '')
-    return (item for item in accept.split(',') if item)
+
+    for item in accept.split(','):
+        if item:
+            yield QualityString.from_string(item)
 
 
 ACCEPT = LocalProxy(_get_accept)
-
-
-class Language(str):
-    """A language."""
-
-    def __new__(cls, string, quality=None):
-        return super().__new__(cls, string)
-
-    def __init__(self, _, quality=None):
-        """Sets the quality."""
-        super().__init__()
-        self.quality = quality
 
 
 @coerce(frozenset)
@@ -40,14 +31,31 @@ def _get_languages():
 
     for language in languages:
         if language:
-            try:
-                language, quality = language.split(';')
-            except ValueError:
-                quality = None
-            else:
-                quality = float(quality[2:])
-
-        yield Language(language, quality=quality)
+            yield QualityString.from_string(language)
 
 
 LANGUAGES = LocalProxy(_get_languages)
+
+
+class QualityString(str):
+    """A string with relative quality attribute."""
+
+    def __new__(cls, string, quality=None):
+        return super().__new__(cls, string)
+
+    def __init__(self, _, quality=None):
+        """Sets the quality."""
+        super().__init__()
+        self.quality = quality
+
+    @classmethod
+    def from_string(cls, string):
+        """Creates the QualityString from the provided string."""
+        try:
+            string, quality = string.split(';')
+        except ValueError:
+            quality = None
+        else:
+            quality = float(quality[2:])
+
+        return cls(string, quality=quality)
