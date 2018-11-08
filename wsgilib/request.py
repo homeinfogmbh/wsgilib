@@ -33,7 +33,7 @@ def _split_csv(string):
 def get_accept():
     """Yields accepting types."""
 
-    return _MimeTypeDict(_split_csv(request.headers.get('Accept', '')))
+    return _AcceptDict(_split_csv(request.headers.get('Accept', '')))
 
 
 ACCEPT = LocalProxy(get_accept)
@@ -48,9 +48,14 @@ def get_languages():
 LANGUAGES = LocalProxy(get_languages)
 
 
-class _MimeTypeDict(dict):
-    """Stores MIME types and a corresponding quality parameter."""
+class _AcceptDict(dict):
+    """Stores MIME types and a corresponding quality
+    parameter representing the "Accept:" headers.
+    """
 
     def __contains__(self, item):
-        """Checks whether the respective MIME type is supported."""
+        """Checks whether the respective MIME type is supported.
+        This is the case if it is explicitely sent or any MIME
+        type ("*/*") is supported.
+        """
         return super().__contains__(item) or super().__contains__('*/*')
