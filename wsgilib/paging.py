@@ -79,6 +79,13 @@ class Browser:
         """Returns the page size."""
         return self.info_arg in request.args
 
+    @property
+    def wanted(self):
+        """Determines if browsing has been requested by URL parameters."""
+        return any((
+            self.page_arg in request.args, self.size_arg in request.args,
+            self.info))
+
     def browse(self, iterable):
         """Pages the respective iterable."""
         size = self.size
@@ -93,7 +100,6 @@ class Browser:
                 break
 
             yield item
-
 
     def pages(self, iterable):
         """Counts the amount of pages."""
