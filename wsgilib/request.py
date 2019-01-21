@@ -17,7 +17,8 @@ def _split_quality(string):
     except ValueError:
         quality = 1
     else:
-        quality = float(quality[2:])
+        _, quality = quality.split('=')
+        quality = float(quality)
 
     return (string, quality)
 
