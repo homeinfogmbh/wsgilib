@@ -36,7 +36,9 @@ def get_locales(basedir, domain, default=None):
 
 
 class Message(Exception):
-    """Base class for messages returned by a web application."""
+    """Base class for messages returned
+    or raised by a web application.
+    """
 
     BASEDIR = NotImplemented
     DOMAIN = NotImplemented
