@@ -17,9 +17,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-"""An object-oriented WSGI micro framework based on Flask."""
+"""A WSGI micro framework based on Flask."""
 
 from wsgilib.application import Application
+from wsgilib.messages import LanguageNotFound, Message
 from wsgilib.paging import PageInfo, Browser
 from wsgilib.request import ACCEPT, LANGUAGES
 from wsgilib.responses import Response
@@ -36,6 +37,7 @@ from wsgilib.responses import InternalServerError
 __all__ = [
     'ACCEPT',
     'LANGUAGES',
+    'LanguageNotFound',
     'Application',
     'Response',
     'PlainText',
@@ -47,4 +49,5 @@ __all__ = [
     'JSON',
     'Binary',
     'PageInfo',
-    'Browser']
+    'Browser',
+    'Message']
