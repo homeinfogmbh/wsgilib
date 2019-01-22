@@ -11,10 +11,6 @@ from wsgilib.responses import JSON
 __all__ = ['LanguageNotFound', 'Message']
 
 
-LOCALES_DIR = '/usr/local/etc/his.d/locales'
-FALLBACK_LANG = {'de_DE': 0.1}
-
-
 class LanguageNotFound(Exception):
     """Indicates that the respective language could not be found."""
 
@@ -25,10 +21,10 @@ class LanguageNotFound(Exception):
 
 
 @lru_cache()
-def get_locales(basedir, domain):
+def get_locales(basedir, domain, default=None):
     """Returns the fist best locale."""
 
-    languages = dict(FALLBACK_LANG)
+    languages = {} if default is None else dict(default)
     languages.update(dict(LANGUAGES))
     languages = sorted(languages.items(), key=itemgetter(1), reverse=True)
     languages = [language for language, _ in languages]
@@ -44,6 +40,7 @@ class Message:
 
     BASEDIR = NotImplemented
     DOMAIN = NotImplemented
+    DEFAULT = None
 
     def __init__(self, msgid, status=200, *,
                  localized_message=None, fields=None):
@@ -60,7 +57,8 @@ class Message:
     @property
     def locales(self):
         """Returns the respective locales."""
-        return get_locales(type(self).BASEDIR, type(self).DOMAIN)
+        cls = type(self)
+        return get_locales(cls.BASEDIR, cls.DOMAIN, default=cls.DEFAULT)
 
     @property
     def localized_message(self):
