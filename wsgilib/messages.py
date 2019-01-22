@@ -45,6 +45,7 @@ class Message(Exception):
     def __init__(self, msgid, status=200, *,
                  localized_message=None, fields=None):
         """Sets message ID and status."""
+        super().__init__(msgid)
         self.msgid = msgid
         self.status = status
         self._localized_message = localized_message
