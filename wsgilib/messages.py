@@ -35,7 +35,7 @@ def get_locales(basedir, domain, default=None):
         raise LanguageNotFound(languages)
 
 
-class Message:
+class Message(Exception):
     """Base class for messages returned by a web application."""
 
     BASEDIR = NotImplemented

@@ -32,9 +32,16 @@ except ImportError:
     getLogger().warning('flask_cors not installed. CORS unavailable.')
 
 from wsgilib.responses import Response, InternalServerError
+from wsgilib.messages import Message
 
 
 __all__ = ['Application']
+
+
+def _id(message):
+    """Returns the message itself."""
+
+    return message
 
 
 class Application(Flask):
@@ -48,7 +55,8 @@ class Application(Flask):
         for exception, function in errorhandlers:
             self.errorhandler(exception)(function)
 
-        self.errorhandler(Response)(lambda response: response)
+        self.errorhandler(Response)(_id)
+        self.errorhandler(Message)(_id)
 
         if debug:
             self.errorhandler(Exception)(lambda _: InternalServerError(
