@@ -57,6 +57,11 @@ class Message(Exception):
         """Implements the flask.Response interface."""
         return self.response(environ, start_response)
 
+    def __repr__(self):
+        """Returns a human readable string representation of the message."""
+        return '{}(msgid={}, status={})'.format(
+            type(self), repr(self.msgid), repr(self.status))
+
     @property
     def locales(self):
         """Returns the respective locales."""
