@@ -9,7 +9,7 @@ from wsgilib.request import LANGUAGES
 from wsgilib.responses import JSON
 
 
-__all__ = ['LanguageNotFound', 'Message']
+__all__ = ['LanguageNotFound', 'MessageFacility']
 
 
 class LanguageNotFound(Exception):

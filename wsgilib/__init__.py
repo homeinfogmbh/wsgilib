@@ -20,7 +20,7 @@
 """A WSGI micro framework based on Flask."""
 
 from wsgilib.application import Application
-from wsgilib.messages import LanguageNotFound, Message
+from wsgilib.messages import LanguageNotFound, MessageFacility
 from wsgilib.paging import PageInfo, Browser
 from wsgilib.request import ACCEPT, LANGUAGES
 from wsgilib.responses import Response
@@ -50,4 +50,4 @@ __all__ = [
     'Binary',
     'PageInfo',
     'Browser',
-    'Message']
+    'MessageFacility']
