@@ -3,10 +3,14 @@
 from wsgilib.responses import JSON
 
 
-__all__ = ['JSONMessage']
+__all__ = ['Message', 'JSONMessage']
 
 
-class JSONMessage(Exception):
+class Message(Exception):
+    """Base class for messages."""
+
+
+class JSONMessage(Message):
     """Base class for messages returned
     or raised by a web application.
     """

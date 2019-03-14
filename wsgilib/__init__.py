@@ -20,7 +20,7 @@
 """A WSGI micro framework based on Flask."""
 
 from wsgilib.application import Application
-from wsgilib.messages import JSONMessage
+from wsgilib.messages import Message, JSONMessage
 from wsgilib.paging import PageInfo, Browser
 from wsgilib.request import ACCEPT
 from wsgilib.responses import Response
@@ -48,4 +48,5 @@ __all__ = [
     'Binary',
     'PageInfo',
     'Browser',
+    'Message',
     'JSONMessage']
