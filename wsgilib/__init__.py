@@ -20,9 +20,9 @@
 """A WSGI micro framework based on Flask."""
 
 from wsgilib.application import Application
-from wsgilib.messages import LanguageNotFound, MessageFacility
+from wsgilib.messages import JSONMessage
 from wsgilib.paging import PageInfo, Browser
-from wsgilib.request import ACCEPT, LANGUAGES
+from wsgilib.request import ACCEPT
 from wsgilib.responses import Response
 from wsgilib.responses import PlainText
 from wsgilib.responses import Error
@@ -36,8 +36,6 @@ from wsgilib.responses import InternalServerError
 
 __all__ = [
     'ACCEPT',
-    'LANGUAGES',
-    'LanguageNotFound',
     'Application',
     'Response',
     'PlainText',
@@ -50,4 +48,4 @@ __all__ = [
     'Binary',
     'PageInfo',
     'Browser',
-    'MessageFacility']
+    'JSONMessage']

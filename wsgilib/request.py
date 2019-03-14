@@ -4,7 +4,7 @@ from flask import request
 from werkzeug.local import LocalProxy
 
 
-__all__ = ['ACCEPT', 'LANGUAGES']
+__all__ = ['ACCEPT']
 
 
 def _split_quality(string):
@@ -38,12 +38,3 @@ def get_accept():
 
 
 ACCEPT = LocalProxy(get_accept)
-
-
-def get_languages():
-    """Returns the accepted languages."""
-
-    return dict(_split_csv(request.headers.get('Accept-Language', '')))
-
-
-LANGUAGES = LocalProxy(get_languages)
