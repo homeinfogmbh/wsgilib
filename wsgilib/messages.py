@@ -9,6 +9,15 @@ __all__ = ['Message', 'JSONMessage']
 class Message(Exception):
     """Base class for messages."""
 
+    def __call__(self, environ, start_response):
+        """Implements the flask.Response interface."""
+        return self.response(environ, start_response)
+
+    @property
+    def response(self):
+        """Returns a response object."""
+        raise NotImplementedError()
+
 
 class JSONMessage(Message):
     """Base class for messages returned
@@ -22,10 +31,6 @@ class JSONMessage(Message):
         self.status = status
         self.fields = fields
 
-    def __call__(self, environ, start_response):
-        """Implements the flask.Response interface."""
-        return self.response(environ, start_response)
-
     @property
     def dictionary(self):
         """Returns the JSON dictionary."""
@@ -35,7 +40,7 @@ class JSONMessage(Message):
 
     @property
     def response(self):
-        """Returns a response object."""
+        """Returns a JSON response object."""
         return JSON(self.dictionary, status=self.status)
 
     def update(self, message=None, **fields):
