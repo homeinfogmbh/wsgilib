@@ -24,7 +24,7 @@ class JSONMessage(Message):
 
     def __call__(self, environ, start_response):
         """Implements the flask.Response interface."""
-        return JSON(self.dictionary, status=self.status)
+        return self.response(environ, start_response)
 
     @property
     def dictionary(self):
@@ -32,6 +32,11 @@ class JSONMessage(Message):
         dictionary = dict(self.fields)
         dictionary['message'] = self.message
         return dictionary
+
+    @property
+    def response(self):
+        """Returns a response object."""
+        return JSON(self.dictionary, status=self.status)
 
     def update(self, message=None, **fields):
         """Updates the extra dictionary fields."""
