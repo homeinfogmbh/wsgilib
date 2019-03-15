@@ -43,9 +43,10 @@ class JSONMessage(Message):
         """Returns a JSON response object."""
         return JSON(self.dictionary, status=self.status)
 
-    def update(self, message=None, **fields):
+    def update(self, message=None, status=None, **fields):
         """Updates the extra dictionary fields."""
         new_fields = dict(self.fields)
         new_fields.update(fields)
         message = self.message if message is None else message
-        return type(self)(message, status=self.status, **fields)
+        status = self.status if status is None else status
+        return type(self)(message, status=status, **fields)
