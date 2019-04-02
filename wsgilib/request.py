@@ -15,10 +15,13 @@ def _split_quality(string):
     try:
         string, quality = string.split(';')
     except ValueError:
-        quality = 1
-    else:
+        return (string, 1)
+
+    try:
         _, quality = quality.split('=')
         quality = float(quality)
+    except ValueError:
+        return (string, 1)
 
     return (string, quality)
 
