@@ -22,6 +22,7 @@
 from contextlib import suppress
 from logging import basicConfig, getLogger
 from traceback import format_exc
+from uuid import uuid4
 
 from flask import Flask
 
@@ -70,7 +71,13 @@ class Application(Flask):
 
     def add_routes(self, routes):
         """Adds the respective routes."""
-        for methods, route, function, endpoint in routes:
+        for route in routes:
+            try:
+                methods, route, function, endpoint = route
+            except ValueError:
+                methods, route, function = route
+                endpoint = uuid4().hex
+
             with suppress(AttributeError):
                 methods = methods.split()
 
