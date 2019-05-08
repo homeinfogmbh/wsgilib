@@ -69,7 +69,7 @@ class Application(Flask):
             else:
                 CORS(self, **cors)
 
-    def add_routes(self, routes):
+    def add_routes(self, routes, strict_slashes=False):
         """Adds the respective routes."""
         for route in routes:
             try:
@@ -81,4 +81,6 @@ class Application(Flask):
             with suppress(AttributeError):
                 methods = methods.split()
 
-            self.add_url_rule(route, endpoint, function, methods=methods)
+            self.add_url_rule(
+                route, endpoint, function, methods=methods,
+                strict_slashes=strict_slashes)
