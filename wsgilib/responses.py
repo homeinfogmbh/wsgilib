@@ -54,7 +54,7 @@ class Response(Exception, Response_):
             msg = msg.encode(encoding=charset)
 
         if charset is not None:
-            content_type = '{}; charset={}'.format(mimetype, charset)
+            content_type = f'{mimetype}; charset={charset}'
             Response_.__init__(
                 self, response=msg, status=status, headers=headers,
                 content_type=content_type)
@@ -103,7 +103,7 @@ class Error(PlainText):
         if 400 <= status < 600:
             super().__init__(msg, status=status, charset=charset)
         else:
-            raise ValueError('Not an error status: {}'.format(status))
+            raise ValueError(f'Not an error status: {status}')
 
 
 class OK(PlainText):
@@ -114,7 +114,7 @@ class OK(PlainText):
         if 200 <= status < 300:
             super().__init__(msg=msg, status=status, charset=charset)
         else:
-            raise ValueError('Not a success status: {}'.format(status))
+            raise ValueError(f'Not a success status: {status}')
 
 
 class HTML(Response):
@@ -216,7 +216,7 @@ class Binary(Response):
         if filename is None:
             self.headers.pop('Content-Disposition', None)
         else:
-            content_disposition = 'attachment; filename="{}"'.format(filename)
+            content_disposition = f'attachment; filename="{filename}"'
             self.headers['Content-Disposition'] = content_disposition
 
 
