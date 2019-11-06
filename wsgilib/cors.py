@@ -5,17 +5,10 @@ from logging import getLogger
 from flask import request
 
 
-__all__ = ['METHODS', 'HEADERS', 'NoOriginError', 'UnauthorizedOrigin', 'CORS']
+__all__ = ['NoOriginError', 'UnauthorizedOrigin', 'CORS']
 
 
 ANY = '*'
-METHODS = ['GET', 'OPTIONS', 'PATCH', 'POST', 'PUT', 'DELETE']
-HEADERS = [
-    'Content-Type',
-    'Cache-Control',
-    'X-Requested-With',
-    'Authorization'
-]
 LOGGER = getLogger('wsgilib.cors')
 
 
