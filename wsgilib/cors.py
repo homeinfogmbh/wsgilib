@@ -29,18 +29,18 @@ class CORS(dict):
     @property
     def allow_origin(self):
         """Returns the allow origin value."""
-        origin = request.headers.get('origin')
-
-        if not origin:
-            raise NoOriginError()
-
         try:
-            allowed_origins = self.get('origins')
+            allowed_origins = self['origins']
         except KeyError:
             allowed_origins = '*'
 
         if allowed_origins == '*':
             return '*'
+
+        origin = request.headers.get('origin')
+
+        if not origin:
+            raise NoOriginError()
 
         if origin in allowed_origins:
             return origin
