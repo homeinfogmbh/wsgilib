@@ -1,5 +1,7 @@
 """Cross-origin resource sharing."""
 
+from logging import getLogger
+
 from flask import request
 
 
@@ -13,6 +15,9 @@ HEADERS = [
     'X-Requested-With',
     'Authorization'
 ]
+
+
+LOGGER = getLogger('wsgilib.cors')
 
 
 class NoOriginError(Exception):
@@ -65,7 +70,14 @@ class CORS(dict):
 
     def apply(self, headers):
         """Applies CORS settings to the respective headers."""
-        headers.add('Access-Control-Allow-Origin', self.allow_origin)
+        try:
+            headers.add('Access-Control-Allow-Origin', self.allow_origin)
+        except NoOriginError:
+            LOGGER.warning('Request did not specify any origin.')
+            return headers
+        except UnauthorizedOrigin:
+            LOGGER.warning('Request from unauthorized origin.')
+            return headers
 
         if self.get('credentials'):
             headers.add('Access-Control-Allow-Credentials', 'true')
@@ -74,3 +86,4 @@ class CORS(dict):
             headers.add('Access-Control-Allow-Headers', header)
 
         headers.add('Access-Control-Allow-Methods', ', '.join(self.methods))
+        return headers
