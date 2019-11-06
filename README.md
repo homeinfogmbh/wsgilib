@@ -136,6 +136,12 @@ The following values are accepted:
 }
 ```
 
+The keys are used as follows:
+* `origins`: List of allowed `origin`s headers for `Access-Control-Allow-Origin`.
+* `methods`: Allowed methods for `Access-Control-Allow-Methods`.
+* `headers`: Allowed headers for `Access-Control-Allow-Headers`.
+* `credentials`: Sets `Access-Control-Allow-Credentials` to `"true"` if `True`ish.
+
 ## Copyright
 Copyright 2017 HOMEINFO - Digitale Informationssysteme GmbH
 
