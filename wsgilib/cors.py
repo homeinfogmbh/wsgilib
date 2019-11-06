@@ -40,7 +40,10 @@ class CORS(dict):
             allowed_origins = '*'
 
         if allowed_origins == '*':
-            return '*'
+            try:
+                return request.headers['origin']
+            except KeyError:
+                return '*'
 
         origin = request.headers.get('origin')
 
