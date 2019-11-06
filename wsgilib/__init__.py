@@ -20,6 +20,9 @@
 """A WSGI micro framework based on Flask."""
 
 from wsgilib.application import Application
+from wsgilib.cors import NoOriginError
+from wsgilib.cors import UnauthorizedOrigin
+from wsgilib.cors import CORS
 from wsgilib.messages import Message, JSONMessage
 from wsgilib.paging import PageInfo, Browser
 from wsgilib.request import ACCEPT
@@ -36,7 +39,10 @@ from wsgilib.responses import InternalServerError
 
 __all__ = [
     'ACCEPT',
+    'NoOriginError',
+    'UnauthorizedOrigin',
     'Application',
+    'CORS',
     'Response',
     'PlainText',
     'Error',

@@ -20,18 +20,12 @@
 """Core application implementation."""
 
 from contextlib import suppress
-from logging import basicConfig, getLogger
 from traceback import format_exc
 from uuid import uuid4
 
 from flask import Flask
 
-try:
-    from flask_cors import CORS
-except ImportError:
-    basicConfig()
-    getLogger().warning('flask_cors not installed. CORS unavailable.')
-
+from wsgilib.cors import CORS
 from wsgilib.responses import Response, InternalServerError
 from wsgilib.messages import Message
 
@@ -58,16 +52,18 @@ class Application(Flask):
 
         self.errorhandler(Response)(_id)
         self.errorhandler(Message)(_id)
+        self.cors = CORS(cors) if cors else CORS()
 
         if debug:
             self.errorhandler(Exception)(lambda _: InternalServerError(
                 msg=format_exc()))
 
-        if cors:
-            if cors is True:
-                CORS(self)
-            else:
-                CORS(self, **cors)
+        self.after_request(self.set_cors)
+
+    def set_cors(self, response):
+        """Sets the CORS headers on the response."""
+        self.cors.apply(response.headers)
+        return response
 
     def add_routes(self, routes, strict_slashes=False):
         """Adds the respective routes."""
