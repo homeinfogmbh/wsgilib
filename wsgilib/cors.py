@@ -8,6 +8,7 @@ from flask import request
 __all__ = ['METHODS', 'HEADERS', 'NoOriginError', 'UnauthorizedOrigin', 'CORS']
 
 
+ANY = '*'
 METHODS = ['GET', 'OPTIONS', 'PATCH', 'POST', 'PUT', 'DELETE']
 HEADERS = [
     'Content-Type',
@@ -15,8 +16,6 @@ HEADERS = [
     'X-Requested-With',
     'Authorization'
 ]
-
-
 LOGGER = getLogger('wsgilib.cors')
 
 
@@ -37,13 +36,13 @@ class CORS(dict):
         try:
             allowed_origins = self['origins']
         except KeyError:
-            allowed_origins = '*'
+            allowed_origins = ANY
 
-        if allowed_origins == '*':
+        if allowed_origins == ANY:
             try:
                 return request.headers['origin']
             except KeyError:
-                return '*'
+                return ANY
 
         origin = request.headers.get('origin')
 
