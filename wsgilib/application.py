@@ -68,7 +68,7 @@ class Application(Flask):
 
     def set_cors(self, response):
         """Sets the CORS headers on the response."""
-        if self.cors:
+        if self.cors is not None:
             self.cors.apply(response.headers)
 
         return response

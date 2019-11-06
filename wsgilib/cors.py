@@ -11,8 +11,7 @@ HEADERS = [
     'Content-Type',
     'Cache-Control',
     'X-Requested-With',
-    'Authorization',
-    'session-duration'
+    'Authorization'
 ]
 
 
@@ -35,7 +34,10 @@ class CORS(dict):
         if not origin:
             raise NoOriginError()
 
-        allowed_origins = self.get('origins') or '*'
+        try:
+            allowed_origins = self.get('origins')
+        except KeyError:
+            allowed_origins = '*'
 
         if allowed_origins == '*':
             return '*'
