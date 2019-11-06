@@ -111,29 +111,30 @@ The following values are accepted:
 * `True` to enable CORS for any origin.
 * A `dict` to manually set the CORS parameters:
 
-
-    {
-        "origins": [
-            "https://my.domain.com",
-            "https://otherdomain.org"
-        ],
-        "methods": [
-            "OPTIONS",
-            "GET",
-            "POST",
-            "PUT",
-            "PATCH",
-            "DELETE"
-        ],
-        "headers": [
-            "Content-Type",
-            "Cache-Control",
-            "X-Requested-With",
-            "Authorization",
-            "session-duration"
-        ],
-        "credentials": true
-    }
+```
+{
+    "origins": [
+        "https://my.domain.com",
+        "https://otherdomain.org"
+    ],
+    "methods": [
+        "OPTIONS",
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE"
+    ],
+    "headers": [
+        "Content-Type",
+        "Cache-Control",
+        "X-Requested-With",
+        "Authorization",
+        "session-duration"
+    ],
+    "credentials": true
+}
+```
 
 ## Copyright
 Copyright 2017 HOMEINFO - Digitale Informationssysteme GmbH
