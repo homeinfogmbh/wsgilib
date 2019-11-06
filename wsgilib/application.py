@@ -52,7 +52,13 @@ class Application(Flask):
 
         self.errorhandler(Response)(_id)
         self.errorhandler(Message)(_id)
-        self.cors = CORS(cors) if cors else CORS()
+
+        if cors is True:
+            self.cors = CORS()
+        elif cors:
+            self.cors = CORS(cors)
+        else:
+            self.cors = None
 
         if debug:
             self.errorhandler(Exception)(lambda _: InternalServerError(
@@ -62,7 +68,9 @@ class Application(Flask):
 
     def set_cors(self, response):
         """Sets the CORS headers on the response."""
-        self.cors.apply(response.headers)
+        if self.cors:
+            self.cors.apply(response.headers)
+
         return response
 
     def add_routes(self, routes, strict_slashes=False):
