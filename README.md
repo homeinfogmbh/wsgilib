@@ -6,7 +6,7 @@ Following are some example use cases.
 
 ### Examples
 The `Application` class takes three special parameters that `Flask` does not.  
-The flag `cors` causes `flask_cors.CORS` to be applied to itself if set to `True`, enabling [CORS](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing).  
+The flag `cors` can be used to set the Cross-Origin Resource Sharing settings.  
 The flag `debug` adds an error handler for all `Exception`s to raise an `InternalServerError` with a full stack trace if set to `True`.  
 The flag `errorhandlers` takes an interable of 2-tuples of error handlers, each 2-tuple providing the to-be-handled exception and handling function.
 
@@ -84,7 +84,8 @@ To automatically return JSON responses from dictionaries, there is a class `JSON
             'id': 12,
             'name': 'my_object',
             'success': True,
-            'issued': datetime.now()}
+            'issued': datetime.now()
+        }
         return JSON(dictionary)
 
 #### Binaries
@@ -101,6 +102,38 @@ To return binary data, the class `Binary` uses the library [mimeutil](https://gi
 
 #### Internal server errors
 For debugging purposes or to detect runtime errors within a productive system, the class `InternalServerError` can be used.
+
+### Cross-Origin Resource Sharing
+To use CORS, you can spcify the keyword argument `cors` when instantiating `Application`.  
+The following values are accepted:
+
+* `None` (default) or `False` to disable CORS
+* `True` to enable CORS for any origin.
+* A `dict` to manually set the CORS parameters:
+
+
+    {
+        "origins": [
+            "https://my.domain.com",
+            "https://otherdomain.org"
+        ],
+        "methods": [
+            "OPTIONS",
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+        ],
+        "headers": [
+            "Content-Type",
+            "Cache-Control",
+            "X-Requested-With",
+            "Authorization",
+            "session-duration"
+        ],
+        "credentials": true
+    }
 
 ## Copyright
 Copyright 2017 HOMEINFO - Digitale Informationssysteme GmbH
