@@ -87,5 +87,3 @@ class CORS(dict):
         """Applies CORS settings to the respective headers."""
         for header, value in self.headers:
             headers.add(header, value)
-
-        return headers
