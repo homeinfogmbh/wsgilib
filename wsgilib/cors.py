@@ -50,18 +50,24 @@ class CORS(dict):
     @property
     def methods(self):
         """Returns the allowed CORS methods."""
-        return self.get('methods') or METHODS
+        try:
+            return self['methods']
+        except KeyError:
+            return METHODS
 
     @property
     def headers(self):
         """Returns the to-be-set CORS headers."""
-        return self.get('header') or HEADERS
+        try:
+            return self['headers']
+        except KeyError:
+            return HEADERS
 
     def apply(self, headers):
         """Applies CORS settings to the respective headers."""
         headers.add('Access-Control-Allow-Origin', self.allow_origin)
 
-        if self.get('allow-credentials'):
+        if self.get('credentials'):
             headers.add('Access-Control-Allow-Credentials', 'true')
 
         for header in self.headers:
