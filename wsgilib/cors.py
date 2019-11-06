@@ -31,7 +31,7 @@ class CORS(dict):
     """CORS settings."""
 
     @property
-    def allow_origin(self):
+    def allowed_origins(self):
         """Returns the allow origin value."""
         try:
             allowed_origins = self['origins']
@@ -55,37 +55,44 @@ class CORS(dict):
         raise UnauthorizedOrigin()
 
     @property
-    def methods(self):
-        """Returns the allowed CORS methods."""
+    def allowed_methods(self):
+        """Yields the allowed CORS methods."""
         try:
-            return self['methods']
+            yield from self['methods']
         except KeyError:
-            return METHODS
+            yield ANY
+
+    @property
+    def allowed_headers(self):
+        """Yields the to-be-set CORS headers."""
+        try:
+            yield from self['headers']
+        except KeyError:
+            yield ANY
 
     @property
     def headers(self):
-        """Returns the to-be-set CORS headers."""
+        """Yields the CORS headers."""
         try:
-            return self['headers']
-        except KeyError:
-            return HEADERS
+            yield ('Access-Control-Allow-Origin', self.allowed_origins)
+        except NoOriginError:
+            LOGGER.warning('Request did not specify any origin.')
+            return
+        except UnauthorizedOrigin:
+            LOGGER.warning('Request from unauthorized origin.')
+            return
+
+        if self.get('credentials'):
+            yield ('Access-Control-Allow-Credentials', 'true')
+
+        for allowed_header in self.allowed_headers:
+            yield ('Access-Control-Allow-Headers', allowed_header)
+
+        yield ('Access-Control-Allow-Methods', ', '.join(self.allowed_methods))
 
     def apply(self, headers):
         """Applies CORS settings to the respective headers."""
-        try:
-            headers.add('Access-Control-Allow-Origin', self.allow_origin)
-        except NoOriginError:
-            LOGGER.warning('Request did not specify any origin.')
-            return headers
-        except UnauthorizedOrigin:
-            LOGGER.warning('Request from unauthorized origin.')
-            return headers
+        for header, value in self.headers:
+            headers.add(header, value)
 
-        if self.get('credentials'):
-            headers.add('Access-Control-Allow-Credentials', 'true')
-
-        for header in self.headers:
-            headers.add('Access-Control-Allow-Headers', header)
-
-        headers.add('Access-Control-Allow-Methods', ', '.join(self.methods))
         return headers
