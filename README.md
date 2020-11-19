@@ -88,6 +88,8 @@ or
         """Returns an XML text response from an Element object."""
         return XML(root)
 
+The latter example will result in `<root foo="42"><bar spamm="eggs">Hello world.</bar></root>`.
+
 #### JSON
 To automatically return JSON responses from `dict`s, there is a class `JSON`:
 
