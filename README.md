@@ -79,7 +79,7 @@ or
 
     from xml.etree.ElementTree import Element, SubElement
     
-    root = Element('root', attrib={'foo': 42})
+    root = Element('root', attrib={'foo': '42'})
     sub_element = SubElement(root, 'bar', attrib={'spamm': 'eggs'})
     sub_element.text = 'Hello world.'
 
