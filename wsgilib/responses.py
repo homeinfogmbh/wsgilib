@@ -21,6 +21,7 @@
 
 from contextlib import suppress
 from hashlib import sha256
+from re import compile  # pylint: disable=W0622
 from xml.etree.ElementTree import tostring
 
 from flask import Response as Response_
@@ -41,6 +42,9 @@ __all__ = [
     'Binary',
     'InternalServerError'
 ]
+
+
+CONTENT_DISPOSITION = compile('(\\w+)(?:; filename="(.+)")?')
 
 
 class Response(Exception, Response_):   # pylint: disable=R0901
@@ -216,8 +220,12 @@ class Binary(Response):     # pylint: disable=R0901
         except KeyError:
             return None
 
-        _, filename = content_disposition.split('; ')
-        _, filename, _ = filename.split('"')
+        match = CONTENT_DISPOSITION.fullmatch(content_disposition)
+
+        if match is None:
+            return None
+
+        _, filename = match.groups()
         return filename
 
     @filename.setter
