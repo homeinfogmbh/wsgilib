@@ -1,36 +1,20 @@
-# Copyright 2017 HOMEINFO - Digitale Informationssysteme GmbH
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
 """Paging of iterables."""
 
-from collections import namedtuple
+from typing import Iterable, NamedTuple, Union
 
 from flask import request
+
+from wsgilib.types import Page
 
 
 __all__ = ['PageInfo', 'Browser']
 
 
-class PageInfo(namedtuple('PageInfo', ('full_pages', 'remainder'))):
+class PageInfo(NamedTuple):
     """Represents page information."""
 
-    __slots__ = ()
+    full_pages: int
+    remainder: int
 
     @property
     def pages(self):
@@ -42,14 +26,16 @@ class PageInfo(namedtuple('PageInfo', ('full_pages', 'remainder'))):
         return {
             'fullPages': self.full_pages,
             'remainder': self.remainder,
-            'pages': self.pages}
+            'pages': self.pages
+        }
 
 
 class Browser:
     """Page browser."""
 
-    def __init__(self, *, page_arg='page', size_arg='size', info_arg='pages',
-                 default_page=0, default_size=10):
+    def __init__(self, *, page_arg: str = 'page', size_arg: str = 'size',
+                 info_arg: str = 'pages', default_page: int = 0,
+                 default_size: int = 10):
         """Sets the paging configuration."""
         self.page_arg = page_arg
         self.size_arg = size_arg
@@ -57,7 +43,7 @@ class Browser:
         self.default_page = default_page
         self.default_size = default_size
 
-    def __call__(self, iterable):
+    def __call__(self, iterable: Iterable) -> Union[PageInfo, Page]:
         """Returns the browsed real estates or page info."""
         if self.info:
             return self.pages(iterable)
@@ -65,28 +51,29 @@ class Browser:
         return self.browse(iterable)
 
     @property
-    def page(self):
+    def page(self) -> int:
         """Returns the page."""
         return int(request.args.get(self.page_arg, self.default_page))
 
     @property
-    def size(self):
+    def size(self) -> int:
         """Returns the page size."""
         return int(request.args.get(self.size_arg, self.default_size))
 
     @property
-    def info(self):
+    def info(self) -> bool:
         """Returns the page size."""
         return self.info_arg in request.args
 
     @property
-    def wanted(self):
+    def wanted(self) -> bool:
         """Determines if browsing has been requested by URL parameters."""
-        return any((
-            self.page_arg in request.args, self.size_arg in request.args,
-            self.info))
+        return any(
+            (self.page_arg in request.args, self.size_arg in request.args,
+             self.info)
+        )
 
-    def browse(self, iterable):
+    def browse(self, iterable: Iterable) -> Page:
         """Pages the respective iterable."""
         size = self.size
         first = self.page * size
@@ -101,7 +88,7 @@ class Browser:
 
             yield item
 
-    def pages(self, iterable):
+    def pages(self, iterable: Iterable) -> PageInfo:
         """Counts the amount of pages."""
         size = self.size
         items = 0

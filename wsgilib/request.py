@@ -1,13 +1,17 @@
 """Request parsing."""
 
+from typing import Dict, Generator
+
 from flask import request
 from werkzeug.local import LocalProxy
+
+from wsgilib.types import Quality
 
 
 __all__ = ['ACCEPT']
 
 
-def _split_quality(string):
+def split_quality(string: str) -> Quality:
     """Splits an optional quality parameter
     q=<float> from the provided string.
     """
@@ -26,18 +30,18 @@ def _split_quality(string):
     return (string, quality)
 
 
-def _split_csv(string):
+def split_csv(string: str) -> Generator[Quality, None, None]:
     """Yields the respective elements."""
 
     for item in string.split(','):
         if item:
-            yield _split_quality(item)
+            yield split_quality(item)
 
 
-def get_accept():
+def get_accept() -> Dict[str, float]:
     """Yields accepting types."""
 
-    return dict(_split_csv(request.headers.get('Accept', '')))
+    return dict(split_csv(request.headers.get('Accept', '')))
 
 
 ACCEPT = LocalProxy(get_accept)

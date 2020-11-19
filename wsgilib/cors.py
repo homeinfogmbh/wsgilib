@@ -1,8 +1,12 @@
 """Cross-origin resource sharing."""
 
 from logging import getLogger
+from typing import Generator
 
 from flask import request
+from werkzeug.datastructures import Headers
+
+from wsgilib.types import Header
 
 
 __all__ = ['NoOriginError', 'UnauthorizedOrigin', 'CORS']
@@ -24,7 +28,7 @@ class CORS(dict):
     """CORS settings."""
 
     @property
-    def allowed_origins(self):
+    def allowed_origins(self) -> str:
         """Returns the allow origin value."""
         try:
             allowed_origins = self['origins']
@@ -48,7 +52,7 @@ class CORS(dict):
         raise UnauthorizedOrigin()
 
     @property
-    def allowed_methods(self):
+    def allowed_methods(self) -> str:
         """Yields the allowed CORS methods."""
         try:
             yield from self['methods']
@@ -56,7 +60,7 @@ class CORS(dict):
             yield ANY
 
     @property
-    def allowed_headers(self):
+    def allowed_headers(self) -> str:
         """Yields the to-be-set CORS headers."""
         try:
             yield from self['headers']
@@ -64,7 +68,7 @@ class CORS(dict):
             yield ANY
 
     @property
-    def headers(self):
+    def headers(self) -> Generator[Header, None, None]:
         """Yields the CORS headers."""
         try:
             yield ('Access-Control-Allow-Origin', self.allowed_origins)
@@ -83,7 +87,7 @@ class CORS(dict):
 
         yield ('Access-Control-Allow-Methods', ', '.join(self.allowed_methods))
 
-    def apply(self, headers):
+    def apply(self, headers: Headers):
         """Applies CORS settings to the respective headers."""
         for header, value in self.headers:
             headers.add(header, value)
