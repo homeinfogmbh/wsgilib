@@ -8,7 +8,7 @@ Following are some example use cases.
 The `Application` class takes three special parameters that `Flask` does not.  
 The flag `cors` can be used to set the Cross-Origin Resource Sharing settings.  
 The flag `debug` adds an error handler for all `Exception`s to raise an `InternalServerError` with a full stack trace if set to `True`.  
-The flag `errorhandlers` takes an interable of 2-tuples of error handlers, each 2-tuple providing the to-be-handled exception and handling function.
+The flag `errorhandlers` takes an iterable of 2-tuples of error handlers, each 2-tuple providing the to-be-handled exception class and a handler function.
 
 #### Simple WSGI application
 A simple WSGI application may be implemented using the `Application` class.
@@ -65,28 +65,42 @@ Retuns a plain text success message. The default status is `200`. Valid values a
 Retuns a plain text error message. The default status is `400`. Valid values are 400-599.
 
 #### XML
-To automatically convert [PyXB](https://github.com/pabigot/pyxb) DOMs to XML responses, the framework provides the class `XML`:
+The framework provides the class `XML` for returning XML text.  
+It automatically detects and converts [PyXB](https://github.com/pabigot/pyxb) DOMs and `xml.etree.ElementTree.Element`s to XML text.
 
-    DOM = MY_BINDING.CreateFromDocument(XML_TEXT)
+    dom = MY_BINDING.CreateFromDocument(XML_TEXT)
 
     @APPLICATION.route('/xml')
     def get_xml():
-        """Returns an XML document."""
-        return XML(DOM)
+        """Returns an XML text response from a PyXB DOM."""
+        return XML(dom)
+        
+or
+
+    from xml.etree.ElementTree import Element, SubElement
+    
+    root = Element('root', attrib={'foo': 42})
+    sub_element = SubElement(root, 'bar', attrib={'spamm': 'eggs'})
+    sub_element.text = 'Hello world.'
+
+    @APPLICATION.route('/xml')
+    def get_xml():
+        """Returns an XML text response from an Element object."""
+        return XML(root)
 
 #### JSON
-To automatically return JSON responses from dictionaries, there is a class `JSON`:
+To automatically return JSON responses from `dict`s, there is a class `JSON`:
 
     @APPLICATION.route('/json')
     def get_json():
         """Returns a JSON object as described by the dictionary."""
-        dictionary = {
+        json = {
             'id': 12,
             'name': 'my_object',
             'success': True,
             'issued': datetime.now()
         }
-        return JSON(dictionary)
+        return JSON(json)
 
 #### Binaries
 To return binary data, the class `Binary` uses the library [mimeutil](https://gitlab.com/HOMEINFO/mimeutil) to try to detect the appropriate MIME type:
@@ -98,7 +112,7 @@ To return binary data, the class `Binary` uses the library [mimeutil](https://gi
         via the URL parameter <filename>.
         """
         with open('/my/file', 'rb') as file:
-            return Binary(file.read(), filename=request.get('filename'))
+            return Binary(file.read(), filename='my_file.bin')
 
 #### Internal server errors
 For debugging purposes or to detect runtime errors within a productive system, the class `InternalServerError` can be used.
