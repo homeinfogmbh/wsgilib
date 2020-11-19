@@ -159,11 +159,9 @@ class XML(Response):    # pylint: disable=R0901
         else:
             encoding = False
 
-
         super().__init__(
-            msg=msg.toxml(encoding=charset), status=status,
-            mimetype='application/xml', charset=charset, encoding=encoding,
-            headers=headers)
+            msg=msg, status=status, mimetype='application/xml',
+            charset=charset, encoding=encoding, headers=headers)
 
 
 class JSON(Response):   # pylint: disable=R0901
