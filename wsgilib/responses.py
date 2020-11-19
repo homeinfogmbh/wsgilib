@@ -19,7 +19,6 @@
 # THE SOFTWARE.
 """Response types."""
 
-from contextlib import suppress
 from hashlib import sha256
 from re import compile  # pylint: disable=W0622
 from xml.etree.ElementTree import tostring
@@ -131,12 +130,16 @@ class HTML(Response):   # pylint: disable=R0901
 
     def __init__(self, msg=None, status=200, charset='utf-8', headers=None):
         """Returns a plain text success response."""
-        with suppress(AttributeError):
-            msg = tostring(msg)
+        try:
+            msg = tostring(msg, encoding=charset, method='html')
+        except AttributeError:
+            encoding = True
+        else:
+            encoding = False
 
         super().__init__(
-            msg=msg, status=status, mimetype='text/html',
-            charset=charset, encoding=True, headers=headers)
+            msg=msg, status=status, mimetype='text/html', charset=charset,
+            encoding=encoding, headers=headers)
 
 
 class XML(Response):    # pylint: disable=R0901
