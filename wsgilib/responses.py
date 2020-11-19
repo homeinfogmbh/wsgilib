@@ -50,13 +50,13 @@ class Response(Exception, Response_):   # pylint: disable=R0901
     """A raisable WSGI response."""
 
     def __init__(self, msg=None, status=200, mimetype='text/plain',
-                 charset='utf-8', encoding=True, headers=None):
+                 charset='utf-8', encoding=None, headers=None):
         """Initializes Exception and Response superclasses."""
         Exception.__init__(self, msg)
         self._exceptions = ()
         msg = msg or ''
 
-        if encoding:
+        if encoding or encoding is None and isinstance(msg, str):
             msg = msg.encode(encoding=charset)
 
         if charset is not None:
@@ -133,7 +133,7 @@ class HTML(Response):   # pylint: disable=R0901
         try:
             msg = tostring(msg, encoding=charset, method='html')
         except AttributeError:
-            encoding = True
+            encoding = None
         else:
             encoding = False
 
@@ -145,11 +145,24 @@ class HTML(Response):   # pylint: disable=R0901
 class XML(Response):    # pylint: disable=R0901
     """An XML response."""
 
-    def __init__(self, dom, status=200, charset='utf-8', headers=None):
+    def __init__(self, msg, status=200, charset='utf-8', headers=None):
         """Sets the dom and inherited responde attributes."""
+        try:
+            msg = msg.toxml(encoding=charset)
+        except AttributeError:
+            try:
+                msg = tostring(msg, encoding=charset, method='xml')
+            except AttributeError:
+                encoding = None
+            else:
+                encoding = False
+        else:
+            encoding = False
+
+
         super().__init__(
-            msg=dom.toxml(encoding=charset), status=status,
-            mimetype='application/xml', charset=charset, encoding=None,
+            msg=msg.toxml(encoding=charset), status=status,
+            mimetype='application/xml', charset=charset, encoding=encoding,
             headers=headers)
 
 
@@ -245,7 +258,7 @@ class Binary(Response):     # pylint: disable=R0901
             self.headers['Content-Disposition'] = content_disposition
 
 
-class InternalServerError(Response):    # pylint: disable=R0901
+class InternalServerError(Error):   # pylint: disable=R0901
     """A code-500 WSGI response."""
 
     def __init__(self, msg='Internal Server Error.', charset='utf-8',
