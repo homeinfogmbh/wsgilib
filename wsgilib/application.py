@@ -2,6 +2,7 @@
 
 from contextlib import suppress
 from uuid import uuid4
+from traceback import format_exc
 from typing import Iterable
 
 from flask import Flask
@@ -15,10 +16,10 @@ from wsgilib.types import ErrorHandler, Route
 __all__ = ['Application']
 
 
-def internal_server_error(exception: Exception) -> InternalServerError:
+def internal_server_error(_: Exception) -> InternalServerError:
     """Returns an internal server error."""
 
-    return InternalServerError(msg=exception.with_traceback())
+    return InternalServerError(msg=format_exc())
 
 
 class Application(Flask):
