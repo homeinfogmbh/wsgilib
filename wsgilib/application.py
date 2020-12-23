@@ -49,7 +49,7 @@ class Application(Flask):
             print('DEBUG:', 'Applying CORS', flush=True)
             self.cors.apply(response.headers)
 
-        print('Resonse:', response, flush=True)
+        print('Resonse:', type(resonse), response, dir(resonse), flush=True)
         return response
 
     def add_route(self, route: Route, strict_slashes: bool = False):
