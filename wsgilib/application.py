@@ -18,23 +18,33 @@ __all__ = ['Application']
 class Application(Flask):
     """Extended web application basis."""
 
-    def __init__(self, *args, cors: Union[bool, dict] = None,
+    def __init__(self, *args, cors: Union[CORS, dict, bool] = None,
                  debug: bool = False, **kwargs):
         """Invokes super constructor and adds exception handlers."""
         super().__init__(*args, **kwargs)
         self.register_error_handler(Response, lambda response: response)
         self.register_error_handler(Message, lambda message: message)
         self.register_error_handler(Exception, self._internal_server_error)
-
-        if cors is True:
-            self.cors = CORS()
-        elif cors:
-            self.cors = CORS(cors)
-        else:
-            self.cors = None
-
-        self.debug = debug
         self.after_request(self._postprocess_response)
+        self.cors = cors
+        self.debug = debug
+
+    @property
+    def cors(self):
+        """Returns the CORS settings."""
+        return self._cors
+
+    @cors.setter
+    def cors(self, cors: Union[CORS, dict, bool]):
+        """Sets the CORS settings."""
+        if cors is True:
+            self._cors = CORS()
+        elif isinstance(cors, CORS):
+            self._cors = cors
+        elif cors:
+            self._cors = CORS(cors)
+        else:
+            self._cors = None
 
     def _internal_server_error(self, exception: Exception) -> Response:
         """Handles uncaught internal server errors."""
