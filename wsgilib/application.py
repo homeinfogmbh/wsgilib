@@ -2,7 +2,7 @@
 
 from contextlib import suppress
 from traceback import format_exc
-from typing import Iterable
+from typing import Iterable, Union
 
 from flask import Flask
 
@@ -18,7 +18,8 @@ __all__ = ['Application']
 class Application(Flask):
     """Extended web application basis."""
 
-    def __init__(self, *args, cors: bool = None, **kwargs):
+    def __init__(self, *args, cors: Union[bool, dict] = None,
+                 debug: bool = False, **kwargs):
         """Invokes super constructor and adds exception handlers."""
         super().__init__(*args, **kwargs)
         self.register_error_handler(Response, lambda response: response)
@@ -32,6 +33,7 @@ class Application(Flask):
         else:
             self.cors = None
 
+        self.debug = debug
         self.after_request(self._postprocess_response)
 
     def _internal_server_error(self, exception: Exception) -> Response:
