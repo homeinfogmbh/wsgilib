@@ -91,9 +91,5 @@ class Browser:
     def pages(self, iterable: Iterable) -> PageInfo:
         """Counts the amount of pages."""
         size = self.size
-        items = 0
-
-        for items, _ in enumerate(iterable, start=1):
-            pass
-
+        items = sum(1 for _ in iterable)
         return PageInfo(items // size, items % size)
