@@ -1,7 +1,7 @@
 """Common types."""
 
 from datetime import date, time, datetime
-from typing import Callable, Generator, Iterable, NamedTuple, Tuple, Union
+from typing import Callable, Iterable, NamedTuple, Tuple, Union
 
 
 __all__ = [
@@ -11,7 +11,6 @@ __all__ = [
     'ExtendedRoute',
     'Header',
     'Message',
-    'Page',
     'Quality',
     'Route',
     'SimpleRoute'
@@ -23,7 +22,6 @@ ErrorHandler = Tuple[Exception, Callable]
 ETag = Union[bool, str]
 Header = Tuple[str, str]
 Message = Union[str, bytes]
-Page = Generator[object, None, None]
 Quality = Tuple[str, float]
 
 

@@ -1,11 +1,9 @@
 """Paging of iterables."""
 
 from itertools import islice
-from typing import Iterable, NamedTuple, Union
+from typing import Iterable, Iterator, NamedTuple, Union
 
 from flask import request
-
-from wsgilib.types import Page
 
 
 __all__ = ['PageInfo', 'Browser']
@@ -44,7 +42,7 @@ class Browser:
         self.default_page = default_page
         self.default_size = default_size
 
-    def __call__(self, iterable: Iterable) -> Union[PageInfo, Page]:
+    def __call__(self, iterable: Iterable) -> Union[PageInfo, Iterator]:
         """Returns the browsed real estates or page info."""
         if self.info:
             return self.pages(iterable)
@@ -80,7 +78,7 @@ class Browser:
 
         return False
 
-    def browse(self, iterable: Iterable) -> Page:
+    def browse(self, iterable: Iterable) -> Iterator:
         """Pages the respective iterable."""
         first = self.page * self.size
         return islice(iterable, first, first + self.size)

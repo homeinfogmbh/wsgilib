@@ -7,8 +7,6 @@ from typing import Callable
 import html
 import json
 
-from timelib import strpdate, strptime, strpdatetime
-
 from wsgilib.types import DateTimeDatetime
 
 
@@ -46,13 +44,13 @@ def parse_datetime(string: str) -> DateTimeDatetime:
     """Parses datetime, date or time value of the respective string."""
 
     with suppress(ValueError):
-        return strpdatetime(string)
+        return date.fromisoformat(string)
 
     with suppress(ValueError):
-        return strpdate(string)
+        return time.fromisoformat(string)
 
     with suppress(ValueError):
-        return strptime(string)
+        return datetime.fromisoformat(string)
 
     raise ValueError('Not a datetime, date or time string.')
 
