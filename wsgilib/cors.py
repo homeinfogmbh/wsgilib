@@ -92,5 +92,7 @@ class CORS(dict):
 
     def apply(self, headers: Headers):
         """Applies CORS settings to a headers object."""
+        print('DEBUG:', 'Applying CORS to headers', flush=True)
         for header, value in self.headers:
+            print('DEBUG:', 'CORS headers:', header, value, flush=True)
             headers.add(header, value)
