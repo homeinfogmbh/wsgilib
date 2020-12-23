@@ -32,4 +32,5 @@ __all__ = [
     'PageInfo',
     'Browser',
     'Message',
-    'JSONMessage']
+    'JSONMessage'
+]
