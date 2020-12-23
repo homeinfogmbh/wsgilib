@@ -1,11 +1,9 @@
 """Common types."""
 
-from datetime import date, time, datetime
 from typing import Callable, Iterable, NamedTuple, Tuple, Union
 
 
 __all__ = [
-    'DateTimeDatetime',
     'ErrorHandler',
     'ETag',
     'ExtendedRoute',
@@ -17,7 +15,6 @@ __all__ = [
 ]
 
 
-DateTimeDatetime = Union[date, time, datetime]
 ErrorHandler = Tuple[Exception, Callable]
 ETag = Union[bool, str]
 Header = Tuple[str, str]
