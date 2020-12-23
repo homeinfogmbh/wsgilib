@@ -1,5 +1,6 @@
 build
 .installed_files.txt
+.eggs
 *.pyc
 *~
 *.egg-info
