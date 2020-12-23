@@ -3,11 +3,9 @@
 from contextlib import suppress
 from datetime import datetime, date, time
 from types import GeneratorType
-from typing import Callable
+from typing import Callable, Union
 import html
 import json
-
-from wsgilib.types import DateTimeDatetime
 
 
 __all__ = ['dumps', 'escape', 'loads']
@@ -40,8 +38,8 @@ def jsonify(obj: object) -> object:
     return obj
 
 
-def parse_datetime(string: str) -> DateTimeDatetime:
-    """Parses datetime, date or time value of the respective string."""
+def parse_str(string: str) -> Union[date, time, datetime]:
+    """Parses further python objects from a str."""
 
     with suppress(ValueError):
         return date.fromisoformat(string)
@@ -61,7 +59,7 @@ def decode(dictionary: dict) -> dict:
     for key, value in dictionary.items():
         if isinstance(value, str):
             with suppress(ValueError):
-                dictionary[key] = parse_datetime(value)
+                dictionary[key] = parse_str(value)
 
     return dictionary
 
