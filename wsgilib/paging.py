@@ -1,5 +1,6 @@
 """Paging of iterables."""
 
+from itertools import islice
 from typing import Iterable, NamedTuple, Union
 
 from flask import request
@@ -81,18 +82,8 @@ class Browser:
 
     def browse(self, iterable: Iterable) -> Page:
         """Pages the respective iterable."""
-        size = self.size
-        first = self.page * size
-        last = first + size - 1
-
-        for index, item in enumerate(iterable):
-            if index < first:
-                continue
-
-            if index > last:
-                break
-
-            yield item
+        first = self.page * self.size
+        return islice(iterable, first, first + self.size)
 
     def pages(self, iterable: Iterable) -> PageInfo:
         """Counts the amount of pages."""
