@@ -58,7 +58,7 @@ class Application(Flask):
             methods = methods.split()
 
         self.add_url_rule(
-            route, route, function, methods=methods,
+            route, f'{methods} {route}', function, methods=methods,
             strict_slashes=strict_slashes)
 
     def add_routes(self, routes: Iterable[Route],
