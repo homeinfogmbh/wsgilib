@@ -83,7 +83,7 @@ class Browser:
         """Pages the respective iterable."""
         size = self.size
         first = self.page * size
-        last = first + size -1
+        last = first + size - 1
 
         for index, item in enumerate(iterable):
             if index < first:
