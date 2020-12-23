@@ -11,4 +11,5 @@ setup(
     maintainer_email='<r dot neumann at homeinfo period de>',
     packages=['wsgilib'],
     license='GPLv3',
-    description='A simple WSGI framework.')
+    description='A simple WSGI framework.'
+)
