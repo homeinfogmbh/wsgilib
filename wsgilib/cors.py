@@ -28,14 +28,33 @@ class CORS(dict):
     """CORS settings."""
 
     @property
+    def origins(self) -> str:
+        """Returns the configured origins, defaulting to '*'."""
+        try:
+            return set(self['origins'])
+        except KeyError:
+            return {ANY}
+
+    @property
+    def allowed_methods(self) -> str:
+        """Yields the allowed CORS methods."""
+        try:
+            return self['methods']
+        except KeyError:
+            return [ANY]
+
+    @property
+    def allowed_headers(self) -> str:
+        """Yields the to-be-set CORS headers."""
+        try:
+            return self['headers']
+        except KeyError:
+            return [ANY]
+
+    @property
     def allowed_origins(self) -> str:
         """Returns the allow origin value."""
-        try:
-            allowed_origins = self['origins']
-        except KeyError:
-            allowed_origins = ANY
-
-        if allowed_origins == ANY:
+        if ANY in self.origins:
             try:
                 return request.headers['origin']
             except KeyError:
@@ -46,32 +65,16 @@ class CORS(dict):
         if not origin:
             raise NoOriginError()
 
-        if origin in allowed_origins:
+        if origin in self.origins:
             return origin
 
         raise UnauthorizedOrigin()
 
     @property
-    def allowed_methods(self) -> str:
-        """Yields the allowed CORS methods."""
-        try:
-            yield from self['methods']
-        except KeyError:
-            yield ANY
-
-    @property
-    def allowed_headers(self) -> str:
-        """Yields the to-be-set CORS headers."""
-        try:
-            yield from self['headers']
-        except KeyError:
-            yield ANY
-
-    @property
     def headers(self) -> Generator[Header, None, None]:
         """Yields the CORS headers."""
         try:
-            yield ('Access-Control-Allow-Origin', self.allowed_origins)
+            yield ('Access-Control-Allow-Origin', self.origins)
         except NoOriginError:
             LOGGER.warning('Request did not specify any origin.')
             return
@@ -88,6 +91,6 @@ class CORS(dict):
         yield ('Access-Control-Allow-Methods', ', '.join(self.allowed_methods))
 
     def apply(self, headers: Headers):
-        """Applies CORS settings to the respective headers."""
+        """Applies CORS settings to a headers object."""
         for header, value in self.headers:
             headers.add(header, value)
