@@ -29,7 +29,7 @@ def escape(obj: object) -> object:
 def jsonify(obj: object) -> object:
     """Encodes the object into a JSON-ish value."""
 
-    if isinstance(obj, (datetime, date, time)):
+    if isinstance(obj, (date, time, datetime)):
         return obj.isoformat()
 
     if isinstance(obj, (set, frozenset, GeneratorType)):
