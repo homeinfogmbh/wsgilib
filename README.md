@@ -7,8 +7,7 @@ Following are some example use cases.
 ### Examples
 The `Application` class takes three special parameters that `Flask` does not.  
 The flag `cors` can be used to set the Cross-Origin Resource Sharing settings.  
-The flag `debug` adds an error handler for all `Exception`s to raise an `InternalServerError` with a full stack trace if set to `True`.  
-The flag `errorhandlers` takes an iterable of 2-tuples of error handlers, each 2-tuple providing the to-be-handled exception class and a handler function.
+If `debug` is set, unhandled exceptions will result in the return of a full stack trace.  
 
 #### Simple WSGI application
 A simple WSGI application may be implemented using the `Application` class.
