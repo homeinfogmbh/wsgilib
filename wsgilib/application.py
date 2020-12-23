@@ -1,40 +1,29 @@
 """Core application implementation."""
 
 from contextlib import suppress
-from uuid import uuid4
 from traceback import format_exc
 from typing import Iterable
 
 from flask import Flask
 
 from wsgilib.cors import CORS
-from wsgilib.responses import Response, InternalServerError
+from wsgilib.responses import Response
 from wsgilib.messages import Message
-from wsgilib.types import ErrorHandler, Route
+from wsgilib.types import Route
 
 
 __all__ = ['Application']
 
 
-def internal_server_error(_: Exception) -> InternalServerError:
-    """Returns an internal server error."""
-
-    return InternalServerError(msg=format_exc())
-
-
 class Application(Flask):
     """Extended web application basis."""
 
-    def __init__(self, *args, cors: bool = None, debug: bool = False,
-                 errorhandlers: Iterable[ErrorHandler] = None, **kwargs):
+    def __init__(self, *args, cors: bool = None, **kwargs):
         """Invokes super constructor and adds exception handlers."""
         super().__init__(*args, **kwargs)
-
-        for exception, function in errorhandlers or ():
-            self.errorhandler(exception)(function)
-
-        self.errorhandler(Response)(lambda response: response)
-        self.errorhandler(Message)(lambda message: message)
+        self.register_error_handler(Response, lambda response: response)
+        self.register_error_handler(Message, lambda message: message)
+        self.register_error_handler(Exception, self._internal_server_error)
 
         if cors is True:
             self.cors = CORS()
@@ -43,31 +32,35 @@ class Application(Flask):
         else:
             self.cors = None
 
-        if debug:
-            self.errorhandler(Exception)(internal_server_error)
+        self.after_request(self._postprocess_response)
 
-        self.after_request(self.set_cors)
+    def _internal_server_error(self, exception: Exception) -> Response:
+        """Handles uncaught internal server errors."""
+        if self.debug:
+            return (format_exc(), 500)
 
-    def set_cors(self, response: Response) -> Response:
-        """Sets the CORS headers on the response."""
+        return (str(exception), 500)
+
+    def _postprocess_response(self, response: Response) -> Response:
+        """Postprocesses the response."""
         if self.cors is not None:
             self.cors.apply(response.headers)
 
         return response
 
+    def add_route(self, route: Route, strict_slashes: bool = False):
+        """Adds the respective route."""
+        methods, route, function = route
+
+        with suppress(AttributeError):
+            methods = methods.split()
+
+        self.add_url_rule(
+            route, route, function, methods=methods,
+            strict_slashes=strict_slashes)
+
     def add_routes(self, routes: Iterable[Route],
                    strict_slashes: bool = False):
         """Adds the respective routes."""
         for route in routes:
-            try:
-                methods, route, function, endpoint = route
-            except ValueError:
-                methods, route, function = route
-                endpoint = uuid4().hex
-
-            with suppress(AttributeError):
-                methods = methods.split()
-
-            self.add_url_rule(
-                route, endpoint, function, methods=methods,
-                strict_slashes=strict_slashes)
+            self.add_route(route, strict_slashes=strict_slashes)
