@@ -28,7 +28,7 @@ class CORS(dict):
     """CORS settings."""
 
     @property
-    def origins(self) -> str:
+    def allowed_origins(self) -> str:
         """Returns the configured origins, defaulting to '*'."""
         try:
             return set(self['origins'])
@@ -52,9 +52,9 @@ class CORS(dict):
             return [ANY]
 
     @property
-    def allowed_origins(self) -> str:
+    def allowed_origin(self) -> str:
         """Returns the allow origin value."""
-        if ANY in self.origins:
+        if ANY in self.allowed_origins:
             try:
                 return request.headers['origin']
             except KeyError:
@@ -65,7 +65,7 @@ class CORS(dict):
         if not origin:
             raise NoOriginError()
 
-        if origin in self.origins:
+        if origin in self.allowed_origins:
             return origin
 
         raise UnauthorizedOrigin()
@@ -74,7 +74,7 @@ class CORS(dict):
     def headers(self) -> Generator[Header, None, None]:
         """Yields the CORS headers."""
         try:
-            yield ('Access-Control-Allow-Origin', self.origins)
+            yield ('Access-Control-Allow-Origin', self.allowed_origin)
         except NoOriginError:
             LOGGER.warning('Request did not specify any origin.')
             return
@@ -92,7 +92,5 @@ class CORS(dict):
 
     def apply(self, headers: Headers):
         """Applies CORS settings to a headers object."""
-        print('DEBUG:', 'Applying CORS to headers', flush=True)
         for header, value in self.headers:
-            print('DEBUG:', 'CORS headers:', header, value, flush=True)
             headers.add(header, value)

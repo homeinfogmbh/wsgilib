@@ -46,10 +46,8 @@ class Application(Flask):
     def _postprocess_response(self, response: Response) -> Response:
         """Postprocesses the response."""
         if self.cors is not None:
-            print('DEBUG:', 'Applying CORS', flush=True)
             self.cors.apply(response.headers)
 
-        print('Resonse:', type(response), response, dir(response), flush=True)
         return response
 
     def add_route(self, route: Route, strict_slashes: bool = False):
