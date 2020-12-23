@@ -8,7 +8,7 @@ from flask import Response as Response_
 
 from mimeutil import mimetype as get_mimetype
 
-from wsgilib.json import escape, dumps
+from wsgilib.json import htmlescape, jsonify
 from wsgilib.types import ETag, Message
 
 
@@ -159,7 +159,7 @@ class JSON(Response):   # pylint: disable=R0901
         the given dictionary d as JSON response.
         """
         super().__init__(
-            msg=dumps(escape(json), indent=indent),
+            msg=jsonify(htmlescape(json), indent=indent),
             status=status, mimetype='application/json', encoding=True,
             headers=headers)
 
