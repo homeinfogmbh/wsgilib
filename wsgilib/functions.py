@@ -8,12 +8,11 @@ from flask import request
 __all__ = ['get_bool']
 
 
-def get_bool(key: str, default: bool = False, *,
-             source: dict = request.args) -> bool:
-    """Returns a boolean from the request args or another given source."""
+def get_bool(key: str, default: bool = False) -> bool:
+    """Returns a boolean from the request args."""
 
     try:
-        value = source[key]
+        value = request.args[key]
     except KeyError:
         return default
 
