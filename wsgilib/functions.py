@@ -1,11 +1,21 @@
 """Convenience functions."""
 
-from configparser import RawConfigParser
-
 from flask import request
 
 
 __all__ = ['get_bool']
+
+
+BOOL_STRINGS = {
+    '1': True,
+    'yes': True,
+    'true': True,
+    'on': True,
+    '0': False,
+    'no': False,
+    'false': False,
+    'off': False
+}
 
 
 def get_bool(key: str, default: bool = False) -> bool:
@@ -17,6 +27,6 @@ def get_bool(key: str, default: bool = False) -> bool:
         return default
 
     try:
-        return RawConfigParser.BOOLEAN_STATES[value.lower()]
+        return BOOL_STRINGS[value.lower()]
     except KeyError:
         raise ValueError(f'Not a boolean: {value}') from None
