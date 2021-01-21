@@ -2,7 +2,7 @@
 
 from wsgilib.application import Application
 from wsgilib.cors import CORS
-from wsgilib.functions import get_bool
+from wsgilib.functions import get_bool, get_int
 from wsgilib.messages import Message, JSONMessage
 from wsgilib.paging import PageInfo, Browser
 from wsgilib.request import ACCEPT
@@ -34,5 +34,6 @@ __all__ = [
     'Browser',
     'Message',
     'JSONMessage',
-    'get_bool'
+    'get_bool',
+    'get_int'
 ]
