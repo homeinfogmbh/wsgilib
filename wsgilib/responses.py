@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from hashlib import sha256
-from re import compile  # pylint: disable=W0622
+from re import fullmatch
 from typing import Callable
 from xml.etree.ElementTree import tostring
 
@@ -27,7 +27,7 @@ __all__ = [
 ]
 
 
-CONTENT_DISPOSITION = compile('(\\w+)(?:; filename="(.+)")?')
+CONTENT_DISPOSITION = '(\\w+)(?:; filename="(.+)")?'
 
 
 class Response(Exception):   # pylint: disable=R0901
@@ -235,7 +235,7 @@ class Binary(Response):     # pylint: disable=R0901
         except KeyError:
             return None
 
-        match = CONTENT_DISPOSITION.fullmatch(content_disposition)
+        match = fullmatch(CONTENT_DISPOSITION, content_disposition)
 
         if match is None:
             return None
