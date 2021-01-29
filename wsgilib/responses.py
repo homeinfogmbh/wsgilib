@@ -98,23 +98,22 @@ class Response(Exception):   # pylint: disable=R0901
 class PlainText(Response):  # pylint: disable=R0901
     """Returns a successful plain text response."""
 
-    def __init__(self, msg: Message = '', status: int = 200,
+    def __init__(self, msg: Message = '', status: int = 200, *,
                  charset: str = 'utf-8', headers: dict = None):
         """Returns a plain text success response."""
         super().__init__(
-            msg=msg, status=status, mimetype='text/plain',
-            charset=charset, encoding=True, headers=headers)
+            msg, status, mimetype='text/plain', charset=charset, encoding=True,
+            headers=headers)
 
 
 class Error(Response):     # pylint: disable=R0901
     """An WSGI error message."""
 
-    def __init__(self, msg: Message = '', status: int = 400,
+    def __init__(self, msg: Message = '', status: int = 400, *,
                  charset: str = 'utf-8', headers: dict = None):
         """Returns a plain text error response."""
         if 400 <= status < 600:
-            super().__init__(
-                msg, status=status, charset=charset, headers=headers)
+            super().__init__(msg, status, charset=charset, headers=headers)
         else:
             raise ValueError(f'Not an error status: {status}')
 
@@ -122,12 +121,11 @@ class Error(Response):     # pylint: disable=R0901
 class OK(Response):    # pylint: disable=R0901
     """Returns a successful plain text response."""
 
-    def __init__(self, msg: Message = '', status: int = 200,
+    def __init__(self, msg: Message = '', status: int = 200, *,
                  charset: str = 'utf-8', headers: dict = None):
         """Returns a plain text success response."""
         if 200 <= status < 300:
-            super().__init__(
-                msg=msg, status=status, charset=charset, headers=headers)
+            super().__init__(msg, status, charset=charset, headers=headers)
         else:
             raise ValueError(f'Not a success status: {status}')
 
@@ -135,7 +133,7 @@ class OK(Response):    # pylint: disable=R0901
 class HTML(Response):   # pylint: disable=R0901
     """Returns a successful plain text response."""
 
-    def __init__(self, msg: object = '', status: int = 200,
+    def __init__(self, msg: object = '', status: int = 200, *,
                  charset: str = 'utf-8', headers: dict = None):
         """Returns a plain text success response."""
         try:
@@ -146,15 +144,15 @@ class HTML(Response):   # pylint: disable=R0901
             encoding = False
 
         super().__init__(
-            msg=msg, status=status, mimetype='text/html', charset=charset,
+            msg, status, mimetype='text/html', charset=charset,
             encoding=encoding, headers=headers)
 
 
 class XML(Response):    # pylint: disable=R0901
     """An XML response."""
 
-    def __init__(self, msg: object, status: int = 200, charset: str = 'utf-8',
-                 headers: dict = None):
+    def __init__(self, msg: object, status: int = 200, *,
+                 charset: str = 'utf-8', headers: dict = None):
         """Sets the dom and inherited responde attributes."""
         try:
             msg = msg.toxml(encoding=charset)
@@ -169,36 +167,34 @@ class XML(Response):    # pylint: disable=R0901
             encoding = False
 
         super().__init__(
-            msg=msg, status=status, mimetype='application/xml',
-            charset=charset, encoding=encoding, headers=headers)
+            msg, status, mimetype='application/xml', charset=charset,
+            encoding=encoding, headers=headers)
 
 
 class JSON(Response):   # pylint: disable=R0901
     """A JSON response."""
 
-    def __init__(self, json: object, status: int = 200, indent: int = None,
-                 headers: dict = None):
+    def __init__(self, json: object, status: int = 200, *,
+                 indent: int = None, headers: dict = None):
         """Initializes raiseable WSGI response with
         the given dictionary d as JSON response.
         """
         super().__init__(
-            msg=jsonify(htmlescape(json), indent=indent),
-            status=status, mimetype='application/json', encoding=True,
-            headers=headers)
+            jsonify(htmlescape(json), indent=indent), status,
+            mimetype='application/json', encoding=True, headers=headers)
 
 
 class Binary(Response):     # pylint: disable=R0901
     """A binary reply."""
 
-    def __init__(self, msg: bytes, status: int = 200, etag: ETag = None,
+    def __init__(self, msg: bytes, status: int = 200, *, etag: ETag = None,
                  filename: str = None, headers: dict = None):
         """Initializes raiseable WSGI response
         with binary data and an optional etag.
         """
         super().__init__(
-            msg=msg, status=status, mimetype=get_mimetype(msg),
-            charset=None, encoding=False, headers=headers)
-        self._filename = None
+            msg, status, mimetype=get_mimetype(msg), charset=None,
+            encoding=False, headers=headers)
         self.etag = etag
         self.filename = filename
 
@@ -264,7 +260,7 @@ class Binary(Response):     # pylint: disable=R0901
 class InternalServerError(Error):   # pylint: disable=R0901
     """A code-500 WSGI response."""
 
-    def __init__(self, msg: Message = 'Internal Server Error.',
+    def __init__(self, msg: Message = 'Internal Server Error.', *,
                  charset: str = 'utf-8', headers: dict = None):
         """Indicates an internal server error."""
-        super().__init__(msg=msg, status=500, charset=charset, headers=headers)
+        super().__init__(msg, 500, charset=charset, headers=headers)
