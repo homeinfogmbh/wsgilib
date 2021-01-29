@@ -2,7 +2,7 @@
 
 from contextlib import suppress
 from traceback import format_exc, print_exc
-from typing import Iterable, Union
+from typing import Iterable, Optional, Union
 
 from flask import Flask
 
@@ -28,7 +28,7 @@ def dump_stracktrace() -> JSONMessage:
 class Application(Flask):
     """Extended web application basis."""
 
-    def __init__(self, *args, cors: Union[CORS, dict, bool] = None,
+    def __init__(self, *args, cors: Optional[Union[CORS, dict, bool]] = None,
                  debug: bool = False, **kwargs):
         """Invokes super constructor and adds exception handlers."""
         super().__init__(*args, **kwargs)
