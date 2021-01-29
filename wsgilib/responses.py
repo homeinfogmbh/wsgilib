@@ -1,7 +1,9 @@
 """Response types."""
 
+from __future__ import annotations
 from hashlib import sha256
 from re import compile  # pylint: disable=W0622
+from typing import Callable
 from xml.etree.ElementTree import tostring
 
 from flask import Response as Response_
@@ -28,47 +30,68 @@ __all__ = [
 CONTENT_DISPOSITION = compile('(\\w+)(?:; filename="(.+)")?')
 
 
-class Response(Exception, Response_):   # pylint: disable=R0901
+class Response(Exception):   # pylint: disable=R0901
     """A raisable WSGI response."""
 
-    def __init__(self, msg: Message = '', status: int = 200,
+    def __init__(self, msg: Message = '', status: int = 200, *,
                  mimetype: str = 'text/plain', charset: str = 'utf-8',
                  encoding: bool = None, headers: dict = None):
         """Initializes Exception and Response superclasses."""
-        Exception.__init__(self, msg)
-        self.exceptions = None
+        super().__init__()
+        self.msg = msg
+        self.status = status
+        self.mimetype = mimetype
+        self.charset = charset
+        self.encoding = encoding
+        self.headers = headers
+        self._exceptions = None
 
-        if encoding or encoding is None and isinstance(msg, str):
-            msg = msg.encode(encoding=charset)
-
-        if charset is None:
-            Response_.__init__(
-                self, response=msg, status=status, headers=headers,
-                mimetype=mimetype)
-        else:
-            Response_.__init__(
-                self, response=msg, status=status, headers=headers,
-                content_type=f'{mimetype}; charset={charset}')
+    def __call__(self, environ: dict, start_response: Callable):
+        """Implements the flask.Response interface."""
+        return self.response(environ, start_response)
 
     def __enter__(self):
         """Returns itself."""
-        if not self.exceptions:
+        if not self._exceptions:
             raise TypeError('Handling context without exceptions to convert.')
 
         return self
 
     def __exit__(self, typ, value, traceback):
         """Handles the respective exceptions."""
-        self.exceptions, exceptions = None, self.exceptions
+        self._exceptions, exceptions = None, self._exceptions
 
         if exceptions and isinstance(value, exceptions):
             raise self
 
-    def convert(self, *exceptions):
+    @property
+    def body(self) -> bytes:
+        """Returns the body as bytes."""
+        if self.encoding:
+            return self.msg.encode(encoding=self.charset)
+
+        if self.encoding is None and isinstance(self.msg, str):
+            return self.msg.encode(encoding=self.charset)
+
+        return self.msg
+
+    @property
+    def response(self) -> Response_:
+        """Returns an appropriate response object."""
+        if self.charset is None:
+            return Response_(
+                response=self.body, status=self.status, headers=self.headers,
+                mimetype=self.mimetype)
+
+        return Response_(
+            response=self.body, status=self.status, headers=self.headers,
+            content_type=f'{self.mimetype}; charset={self.charset}')
+
+    def convert(self, *exceptions: Exception) -> Response:
         """Prepares the response to convert the specified
         exceptions to itself when exiting a context.
         """
-        self.exceptions = exceptions
+        self._exceptions = exceptions
         return self
 
 
@@ -83,7 +106,7 @@ class PlainText(Response):  # pylint: disable=R0901
             charset=charset, encoding=True, headers=headers)
 
 
-class Error(PlainText):     # pylint: disable=R0901
+class Error(Response):     # pylint: disable=R0901
     """An WSGI error message."""
 
     def __init__(self, msg: Message = '', status: int = 400,
@@ -96,7 +119,7 @@ class Error(PlainText):     # pylint: disable=R0901
             raise ValueError(f'Not an error status: {status}')
 
 
-class OK(PlainText):    # pylint: disable=R0901
+class OK(Response):    # pylint: disable=R0901
     """Returns a successful plain text response."""
 
     def __init__(self, msg: Message = '', status: int = 200,
@@ -183,12 +206,7 @@ class Binary(Response):     # pylint: disable=R0901
     def response_checksum(self):
         """Returns the SHA-256 checksum of the response."""
         if self.response:
-            sha256sum = sha256()
-
-            for response in self.response:
-                sha256sum.update(response)
-
-            return sha256sum.hexdigest()
+            return sha256(self.body).hexdigest()
 
         raise ValueError('No response available to hash.')
 
