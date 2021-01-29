@@ -43,7 +43,7 @@ class Response(Exception):   # pylint: disable=R0901
         self.mimetype = mimetype
         self.charset = charset
         self.encoding = encoding
-        self.headers = headers
+        self.headers = headers or {}
         self._exceptions = None
 
     def __call__(self, environ: dict, start_response: Callable):
