@@ -1,7 +1,7 @@
 """Cross-origin resource sharing."""
 
 from logging import getLogger
-from typing import Generator
+from typing import Iterator
 
 from flask import request
 from werkzeug.datastructures import Headers
@@ -71,7 +71,7 @@ class CORS(dict):
         raise UnauthorizedOrigin()
 
     @property
-    def headers(self) -> Generator[Header, None, None]:
+    def headers(self) -> Iterator[Header]:
         """Yields the CORS headers."""
         try:
             yield ('Access-Control-Allow-Origin', self.allowed_origin)
@@ -90,7 +90,7 @@ class CORS(dict):
 
         yield ('Access-Control-Allow-Methods', ', '.join(self.allowed_methods))
 
-    def apply(self, headers: Headers):
+    def apply(self, headers: Headers) -> None:
         """Applies CORS settings to a headers object."""
         for header, value in self.headers:
             headers.add(header, value)
