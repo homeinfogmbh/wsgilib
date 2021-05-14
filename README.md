@@ -14,30 +14,33 @@ A simple WSGI application may be implemented using the `Application` class.
 
 The following example shows a trivial WSGI application that will return the UTF-8 String *"Hello world!"* on any HTTP *GET* request.
 
-    from wsgilib import Application, OK
+```python
+from wsgilib import Application, OK
 
-    application = Application('MyApplication')
+application = Application('MyApplication')
 
-    @application.route('/')
-    def hello_world(self):
-        return OK('Hello world!')
-
+@application.route('/')
+def hello_world(self):
+    return OK('Hello world!')
+```
 
 #### ReST Application
 For applications using **Re**presentational **S**tate **T**ransfer you can use the same routing idioms as with *flask*.
 
-    from math import factorial
-    from wsgilib import Application, Error, OK
+```python
+from math import factorial
+from wsgilib import Application, Error, OK
 
-    APPLICATION = Application('factorial')
+APPLICATION = Application('factorial')
 
-    @APPLICATION.route('/factorial/<int:value>')
-    def get_factorial(value):
-        """Calculates and returns the factorial of the given number."""
-        if value > 100:
-            raise Error(f'Value too large: {value}.')
+@APPLICATION.route('/factorial/<int:value>')
+def get_factorial(value):
+    """Calculates and returns the factorial of the given number."""
+    if value > 100:
+        raise Error(f'Value too large: {value}.')
 
-        return OK(f'{value}! = {factorial(value)}')
+    return OK(f'{value}! = {factorial(value)}')
+```
 
 The above ReST application will return the following response:
 * `http://<host>/factorial/12` → *12! = 479001600*
@@ -67,53 +70,61 @@ Retuns a plain text error message. The default status is `400`. Valid values are
 The framework provides the class `XML` for returning XML text.  
 It automatically detects and converts [PyXB](https://github.com/pabigot/pyxb) DOMs and `xml.etree.ElementTree.Element`s to XML text.
 
-    dom = MY_BINDING.CreateFromDocument(XML_TEXT)
+```python
+dom = MY_BINDING.CreateFromDocument(XML_TEXT)
 
-    @APPLICATION.route('/xml')
-    def get_xml():
-        """Returns an XML text response from a PyXB DOM."""
-        return XML(dom)
-        
+@APPLICATION.route('/xml')
+def get_xml():
+    """Returns an XML text response from a PyXB DOM."""
+    return XML(dom)
+```
+
 or
 
-    from xml.etree.ElementTree import Element, SubElement
-    
-    root = Element('root', attrib={'foo': '42'})
-    sub_element = SubElement(root, 'bar', attrib={'spamm': 'eggs'})
-    sub_element.text = 'Hello world.'
+```python
+from xml.etree.ElementTree import Element, SubElement
 
-    @APPLICATION.route('/xml')
-    def get_xml():
-        """Returns an XML text response from an Element object."""
-        return XML(root)
+root = Element('root', attrib={'foo': '42'})
+sub_element = SubElement(root, 'bar', attrib={'spamm': 'eggs'})
+sub_element.text = 'Hello world.'
+
+@APPLICATION.route('/xml')
+def get_xml():
+    """Returns an XML text response from an Element object."""
+    return XML(root)
+```
 
 The latter example will result in `<root foo="42"><bar spamm="eggs">Hello world.</bar></root>`.
 
 #### JSON
 To automatically return JSON responses from `dict`s, there is a class `JSON`:
 
-    @APPLICATION.route('/json')
-    def get_json():
-        """Returns a JSON object as described by the dictionary."""
-        json = {
-            'id': 12,
-            'name': 'my_object',
-            'success': True,
-            'issued': datetime.now()
-        }
-        return JSON(json)
+```python
+@APPLICATION.route('/json')
+def get_json():
+    """Returns a JSON object as described by the dictionary."""
+    json = {
+        'id': 12,
+        'name': 'my_object',
+        'success': True,
+        'issued': datetime.now()
+    }
+    return JSON(json)
+```
 
 #### Binaries
 To return binary data, the class `Binary` uses the library [mimeutil](https://gitlab.com/HOMEINFO/mimeutil) to try to detect the appropriate MIME type:
 
-    @APPLICATION.route('/binary')
-    def get_binary():
-        """Returns a binary file.
-        You can optionally specify the file's name
-        via the URL parameter <filename>.
-        """
-        with open('/my/file', 'rb') as file:
-            return Binary(file.read(), filename='my_file.bin')
+```python
+@APPLICATION.route('/binary')
+def get_binary():
+    """Returns a binary file.
+    You can optionally specify the file's name
+    via the URL parameter <filename>.
+    """
+    with open('/my/file', 'rb') as file:
+        return Binary(file.read(), filename='my_file.bin')
+```
 
 #### Internal server errors
 For debugging purposes or to detect runtime errors within a productive system, the class `InternalServerError` can be used.
@@ -126,7 +137,7 @@ The following values are accepted:
 * `True` to enable CORS for any origin.
 * A `dict` to manually set the CORS parameters:
 
-```
+```python
 {
     "origins": [
         "https://my.domain.com",
