@@ -1,28 +1,19 @@
 """Core application implementation."""
 
 from contextlib import suppress
-from traceback import format_exc, print_exc
+from traceback import format_exc
 from typing import Iterable, Optional, Union
 
 from flask import Flask
 
 from wsgilib.cors import CORS
+from wsgilib.debug import dump_stacktrace
 from wsgilib.responses import Error, Response
-from wsgilib.messages import JSONMessage, Message
+from wsgilib.messages import Message
 from wsgilib.types import Route
 
 
 __all__ = ['Application']
-
-
-def dump_stracktrace() -> JSONMessage:
-    """Dumps a stracktrace of an unexpected exception."""
-
-    print('############################ cut here ############################')
-    print_exc()
-    print('######################## end of traceback ########################',
-          flush=True)
-    return JSONMessage('Internal server error.', status=500)
 
 
 class Application(Flask):
@@ -61,7 +52,7 @@ class Application(Flask):
         if self.debug:
             return Error(format_exc(), status=500)
 
-        return dump_stracktrace()
+        return dump_stacktrace()
 
     def _postprocess_response(self, response: Response) -> Response:
         """Postprocesses the response."""
