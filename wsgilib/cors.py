@@ -1,7 +1,7 @@
 """Cross-origin resource sharing."""
 
 from logging import getLogger
-from typing import Iterator
+from typing import Iterator, List, Set
 
 from flask import request
 from werkzeug.datastructures import Headers
@@ -28,7 +28,7 @@ class CORS(dict):
     """CORS settings."""
 
     @property
-    def allowed_origins(self) -> str:
+    def allowed_origins(self) -> Set[str]:
         """Returns the configured origins, defaulting to '*'."""
         try:
             return set(self['origins'])
@@ -36,7 +36,7 @@ class CORS(dict):
             return {ANY}
 
     @property
-    def allowed_methods(self) -> str:
+    def allowed_methods(self) -> List[str]:
         """Yields the allowed CORS methods."""
         try:
             return self['methods']
@@ -44,7 +44,7 @@ class CORS(dict):
             return [ANY]
 
     @property
-    def allowed_headers(self) -> str:
+    def allowed_headers(self) -> List[str]:
         """Yields the to-be-set CORS headers."""
         try:
             return self['headers']
