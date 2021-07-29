@@ -2,6 +2,8 @@
 
 from wsgilib.application import Application
 from wsgilib.cors import CORS
+from wsgilib.decorators import require_json
+from wsgilib.exceptions import InvalidData
 from wsgilib.functions import get_bool, get_int
 from wsgilib.messages import Message, JSONMessage
 from wsgilib.paging import PageInfo, Browser
@@ -25,6 +27,7 @@ __all__ = [
     'PlainText',
     'Error',
     'InternalServerError',
+    'InvalidData',
     'OK',
     'HTML',
     'XML',
@@ -35,5 +38,6 @@ __all__ = [
     'Message',
     'JSONMessage',
     'get_bool',
-    'get_int'
+    'get_int',
+    'require_json'
 ]
