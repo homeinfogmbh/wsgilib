@@ -88,6 +88,9 @@ class CORS(dict):
         for allowed_header in self.allowed_headers:
             yield ('Access-Control-Allow-Headers', allowed_header)
 
+        for exposed_header in self.get('expose', []):
+            yield ('Access-Control-Expose-Headers', exposed_header)
+
         yield ('Access-Control-Allow-Methods', ', '.join(self.allowed_methods))
 
     def apply(self, headers: Headers) -> None:
