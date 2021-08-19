@@ -6,7 +6,7 @@ from json import dumps
 from types import GeneratorType
 
 
-__all__ = ['dumps', 'htmlescape']
+__all__ = ['htmlescape', 'jsonify']
 
 
 def htmlescape(obj: object) -> object:
