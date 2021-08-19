@@ -3,7 +3,7 @@
 from __future__ import annotations
 from hashlib import sha256
 from re import fullmatch
-from typing import Callable
+from typing import Callable, Optional, Union
 from xml.etree.ElementTree import tostring
 
 from flask import Response as Response_
@@ -28,7 +28,7 @@ __all__ = [
 ]
 
 
-CONTENT_DISPOSITION = '(\\w+)(?:; filename="(.+)")?'
+CD_REGEX = '(\\w+)(?:; filename="(.+)")?'
 
 
 class Response(Exception):   # pylint: disable=R0901
@@ -213,7 +213,7 @@ class Binary(Response):     # pylint: disable=R0901
         return self.headers.get('ETag')
 
     @etag.setter
-    def etag(self, etag):
+    def etag(self, etag: Union[None, bool, str]):
         """Sets the e-tag.
         If etag is None, the etag will default
         to the content's SHA-256 checksum.
@@ -236,16 +236,14 @@ class Binary(Response):     # pylint: disable=R0901
         except KeyError:
             return None
 
-        match = fullmatch(CONTENT_DISPOSITION, content_disposition)
-
-        if match is None:
+        if (match := fullmatch(CD_REGEX, content_disposition)) is None:
             return None
 
         _, filename = match.groups()
         return filename
 
     @filename.setter
-    def filename(self, filename):
+    def filename(self, filename: Optional[str]):
         """Sets the file name.
 
         Setting the file name to None will also remove

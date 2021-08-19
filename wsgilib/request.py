@@ -1,6 +1,6 @@
 """Request parsing."""
 
-from typing import Dict, Generator
+from typing import Iterator
 
 from flask import request
 from werkzeug.local import LocalProxy
@@ -30,7 +30,7 @@ def split_quality(string: str) -> Quality:
     return (string, quality)
 
 
-def split_csv(string: str) -> Generator[Quality, None, None]:
+def split_csv(string: str) -> Iterator[Quality]:
     """Yields the respective elements."""
 
     for item in string.split(','):
@@ -38,7 +38,7 @@ def split_csv(string: str) -> Generator[Quality, None, None]:
             yield split_quality(item)
 
 
-def get_accept() -> Dict[str, float]:
+def get_accept() -> dict[str, float]:
     """Yields accepting types."""
 
     return dict(split_csv(request.headers.get('Accept', '')))
