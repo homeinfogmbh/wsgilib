@@ -7,7 +7,7 @@ from typing import Callable
 from xml.etree.ElementTree import tostring
 
 from flask import Response as Response_
-from werkzeug import Headers
+from werkzeug.datastructures import Headers
 
 from mimeutil import mimetype as get_mimetype
 
