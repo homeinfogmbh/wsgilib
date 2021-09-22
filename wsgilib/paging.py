@@ -67,16 +67,9 @@ class Browser:
     @property
     def wanted(self) -> bool:
         """Determines if browsing has been requested by URL parameters."""
-        if self.page_arg in request.args:
-            return True
-
-        if self.size_arg in request.args:
-            return True
-
-        if self.info:
-            return True
-
-        return False
+        return any([self.page_arg in request.args,
+                    self.size_arg in request.args,
+                    self.info])
 
     def browse(self, iterable: Iterable) -> Iterator:
         """Pages the respective iterable."""
