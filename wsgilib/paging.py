@@ -44,10 +44,7 @@ class Browser:
 
     def __call__(self, iterable: Iterable) -> Union[PageInfo, Iterator]:
         """Returns the browsed real estates or page info."""
-        if self.info:
-            return self.pages(iterable)
-
-        return self.browse(iterable)
+        return self.pages(iterable) if self.info else self.browse(iterable)
 
     @property
     def page(self) -> int:
