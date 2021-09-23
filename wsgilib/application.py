@@ -1,6 +1,5 @@
 """Core application implementation."""
 
-from contextlib import suppress
 from traceback import format_exc
 from typing import Iterable, Optional, Union
 
@@ -63,13 +62,17 @@ class Application(Flask):
 
     def add_route(self, route: Route, strict_slashes: bool = False):
         """Adds the respective route."""
-        methods, route, function = route
+        try:
+            methods, route, function, endpoint = route
+        except ValueError:
+            methods, route, function = route
+            endpoint = f'{methods} {route}'
 
-        with suppress(AttributeError):
+        if isinstance(methods, str):
             methods = methods.split()
 
         self.add_url_rule(
-            route, f'{methods} {route}', function, methods=methods,
+            route, endpoint, function, methods=methods,
             strict_slashes=strict_slashes)
 
     def add_routes(self, routes: Iterable[Route],
