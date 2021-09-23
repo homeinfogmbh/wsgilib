@@ -1,6 +1,8 @@
 """Common types."""
 
-from typing import Callable, Iterable, NamedTuple, Tuple, Union
+from typing import Callable, Iterable, NamedTuple, Optional, Union
+
+from flask import Response
 
 
 __all__ = [
@@ -13,14 +15,15 @@ __all__ = [
 
 
 ETag = Union[bool, str]
-Header = Tuple[str, str]
+Header = tuple[str, str]
 Message = Union[str, bytes]
-Quality = Tuple[str, float]
+Quality = tuple[str, float]
 
 
 class Route(NamedTuple):
     """A REST route information."""
 
-    methods: Iterable[str]
+    methods: Union[Iterable[str], str]
     route: str
-    function: Callable
+    function: Callable[Exception, Response]
+    endpoint: Optional[str] = None
