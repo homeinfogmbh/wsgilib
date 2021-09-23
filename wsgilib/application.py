@@ -77,3 +77,8 @@ class Application(Flask):
         """Adds the respective routes."""
         for route in routes:
             self.add_route(route, strict_slashes=strict_slashes)
+
+    def register_error_handlers(self, error_handlers: dict) -> None:
+        """Add multiple error handlers."""
+        for exception, handler in error_handlers.items():
+            self.register_error_handler(exception, handler)
