@@ -10,14 +10,14 @@ __all__ = ['get_bool', 'get_datetime', 'get_int']
 
 
 BOOL_STRINGS = {
-    '1': True,
-    'yes': True,
-    'true': True,
-    'on': True,
-    '0': False,
-    'no': False,
-    'false': False,
-    'off': False
+    '1'.casefold(): True,
+    'yes'.casefold(): True,
+    'true'.casefold(): True,
+    'on'.casefold(): True,
+    '0'.casefold(): False,
+    'no'.casefold(): False,
+    'false'.casefold(): False,
+    'off'.casefold(): False
 }
 
 
@@ -30,7 +30,7 @@ def get_bool(key: str, default: bool = False) -> bool:
         return default
 
     try:
-        return BOOL_STRINGS[value.lower()]
+        return BOOL_STRINGS[value.casefold()]
     except KeyError:
         raise ValueError('Not a boolean:', key, value) from None
 
