@@ -4,7 +4,7 @@ from wsgilib.application import Application
 from wsgilib.cors import CORS
 from wsgilib.decorators import require_json
 from wsgilib.exceptions import InvalidData
-from wsgilib.functions import get_bool, get_int
+from wsgilib.functions import get_bool, get_datetime, get_int
 from wsgilib.messages import Message, JSONMessage
 from wsgilib.paging import PageInfo, Browser
 from wsgilib.request import ACCEPT
@@ -38,6 +38,7 @@ __all__ = [
     'Message',
     'JSONMessage',
     'get_bool',
+    'get_datetime',
     'get_int',
     'require_json'
 ]
