@@ -1,7 +1,7 @@
 """Convenience functions to get specific data types from request args."""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Optional
 
 from flask import request
 
@@ -21,7 +21,7 @@ BOOL_STRINGS = {
 }
 
 
-def get_bool(key: str, default: Any = False) -> bool:
+def get_bool(key: str, default: bool = False) -> bool:
     """Returns a boolean from the request args."""
 
     try:
@@ -35,7 +35,8 @@ def get_bool(key: str, default: Any = False) -> bool:
         raise ValueError('Not a boolean:', key, value) from None
 
 
-def get_datetime(key: str, default: Any = None) -> Optional[datetime]:
+def get_datetime(key: str, default: Optional[datetime] = None) \
+        -> Optional[datetime]:
     """Returns a datetime from a URL parameter."""
 
     try:
@@ -46,7 +47,7 @@ def get_datetime(key: str, default: Any = None) -> Optional[datetime]:
     return datetime.fromisoformat(value)
 
 
-def get_int(key: str, default: Any = None) -> bool:
+def get_int(key: str, default: Optional[int] = None) -> Optional[int]:
     """Returns a boolean from the request args."""
 
     try:
