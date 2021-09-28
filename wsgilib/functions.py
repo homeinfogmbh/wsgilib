@@ -10,14 +10,16 @@ __all__ = ['get_bool', 'get_datetime', 'get_int']
 
 
 BOOL_STRINGS = {
-    '1'.casefold(): True,
-    'yes'.casefold(): True,
-    'true'.casefold(): True,
-    'on'.casefold(): True,
-    '0'.casefold(): False,
-    'no'.casefold(): False,
-    'false'.casefold(): False,
-    'off'.casefold(): False
+    key.casefold(): value for key, value in {
+        '1': True,
+        'yes': True,
+        'true': True,
+        'on': True,
+        '0': False,
+        'no': False,
+        'false': False,
+        'off': False
+    }.items()
 }
 
 
