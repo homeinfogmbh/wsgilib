@@ -1,5 +1,6 @@
 """Convenience functions to get specific data types from request args."""
 
+from contextlib import suppress
 from datetime import datetime
 from typing import Optional
 
@@ -10,16 +11,12 @@ __all__ = ['get_bool', 'get_datetime', 'get_int']
 
 
 BOOL_STRINGS = {
-    key.casefold(): value for key, value in {
-        '1': True,
-        'yes': True,
-        'true': True,
-        'on': True,
-        '0': False,
-        'no': False,
-        'false': False,
-        'off': False
-    }.items()
+    'yes': True,
+    'true': True,
+    'on': True,
+    'no': False,
+    'false': False,
+    'off': False
 }
 
 
@@ -30,6 +27,9 @@ def get_bool(key: str, default: bool = False) -> bool:
         value = request.args[key]
     except KeyError:
         return default
+
+    with suppress(ValueError, TypeError):
+        return bool(int(value))
 
     try:
         return BOOL_STRINGS[value.casefold()]
