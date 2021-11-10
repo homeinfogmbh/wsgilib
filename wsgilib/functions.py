@@ -39,7 +39,7 @@ def get_bool(key: str, default: bool = False) -> bool:
 
 def get_datetime(key: str, default: Optional[datetime] = None) \
         -> Optional[datetime]:
-    """Returns a datetime from a URL parameter."""
+    """Returns a datetime from the request args."""
 
     try:
         value = request.args[key]
