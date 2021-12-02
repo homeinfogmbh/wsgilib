@@ -6,6 +6,7 @@ from flask import Response
 
 
 __all__ = [
+    'CORSType',
     'ETag',
     'Header',
     'Message',
@@ -14,6 +15,7 @@ __all__ = [
 ]
 
 
+CORSType = Union[Callable, dict, bool]
 ETag = Union[bool, str]
 Header = tuple[str, str]
 Message = Union[str, bytes]

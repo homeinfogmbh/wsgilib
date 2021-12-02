@@ -1,7 +1,7 @@
 """Core application implementation."""
 
 from traceback import format_exc
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional
 
 from flask import Flask
 
@@ -9,7 +9,7 @@ from wsgilib.cors import CORS
 from wsgilib.debug import dump_stacktrace
 from wsgilib.responses import Error, Response
 from wsgilib.messages import Message
-from wsgilib.types import Route
+from wsgilib.types import CORSType, Route
 
 
 __all__ = ['Application']
@@ -18,7 +18,7 @@ __all__ = ['Application']
 class Application(Flask):
     """Extended web application basis."""
 
-    def __init__(self, *args, cors: Optional[Union[CORS, dict, bool]] = None,
+    def __init__(self, *args, cors: Optional[CORSType] = None,
                  debug: bool = False, **kwargs):
         """Invokes super constructor and adds exception handlers."""
         super().__init__(*args, **kwargs)
@@ -32,19 +32,24 @@ class Application(Flask):
     @property
     def cors(self):
         """Returns the CORS settings."""
-        return self._cors
+        if self._cors is None:
+            return None
+
+        if self._cors is True:
+            return CORS()
+
+        if isinstance(self._cors, CORS):
+            return self._cors
+
+        if callable(self._cors):
+            return CORS(self._cors())
+
+        return CORS(self._cors)
 
     @cors.setter
-    def cors(self, cors: Union[CORS, dict, bool]):
+    def cors(self, cors: CORSType):
         """Sets the CORS settings."""
-        if cors is True:
-            self._cors = CORS()
-        elif isinstance(cors, CORS):
-            self._cors = cors
-        elif cors:
-            self._cors = CORS(cors)
-        else:
-            self._cors = None
+        self._cors = cors
 
     def _internal_server_error(self, _: Exception) -> Response:
         """Handles uncaught internal server errors."""
