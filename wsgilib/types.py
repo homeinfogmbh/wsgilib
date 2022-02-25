@@ -1,7 +1,6 @@
 """Common types."""
 
-from datetime import datetime
-from typing import Callable, Iterable, NamedTuple, Optional, Protocol, Union
+from typing import Callable, Iterable, NamedTuple, Optional, Union
 
 from flask import Response
 
@@ -12,8 +11,7 @@ __all__ = [
     'Header',
     'Message',
     'Quality',
-    'Route',
-    'Session'
+    'Route'
 ]
 
 
@@ -31,12 +29,3 @@ class Route(NamedTuple):
     route: str
     function: Callable[[Exception], Response]
     endpoint: Optional[str] = None
-
-
-class Session(Protocol):
-    """Session protocol."""
-
-    id: int
-    secret: str
-    start: datetime
-    end: datetime
