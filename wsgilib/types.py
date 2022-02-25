@@ -27,5 +27,5 @@ class Route(NamedTuple):
 
     methods: Union[Iterable[str], str]
     route: str
-    function: Callable[Exception, Response]
+    function: Callable[[Exception], Response]
     endpoint: Optional[str] = None
