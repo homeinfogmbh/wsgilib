@@ -10,7 +10,7 @@ __all__ = ['htmlescape', 'jsonify']
 
 
 def htmlescape(obj: object) -> object:
-    """Escapes HTML code withtin the provided object."""
+    """Escapes HTML within the provided object."""
 
     if isinstance(obj, str):
         return escape(obj)
