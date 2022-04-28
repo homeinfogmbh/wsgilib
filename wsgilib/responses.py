@@ -218,10 +218,14 @@ class JSON(Response):
             *,
             indent: int = None,
             headers: dict = None,
+            preprocess: Optional[Callable[[Any], Any]] = htmlescape
     ):
+        if preprocess is not None:
+            json = preprocess(json)
+
         super().__init__(
-            jsonify(htmlescape(json), indent=indent), status,
-            mimetype='application/json', encoding=True, headers=headers
+            jsonify(json, indent=indent), status, mimetype='application/json',
+            encoding=True, headers=headers
         )
 
 
