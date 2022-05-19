@@ -2,13 +2,16 @@
 
 from contextlib import suppress
 from datetime import datetime
+from io import IOBase
 from re import search
-from typing import Optional
+from typing import Iterator, Optional
 
-from flask import request
+from flask import request, Response, stream_with_context
+
+from mimeutil import mimetype
 
 
-__all__ = ['get_bool', 'get_datetime', 'get_int', 'get_range']
+__all__ = ['get_bool', 'get_datetime', 'get_int', 'get_range', 'filestream']
 
 
 BOOL_STRINGS = {
@@ -75,3 +78,22 @@ def get_range() -> tuple[int, Optional[int]]:
     start = int(start) if start else 0
     end = int(end) if end else None
     return start, end
+
+
+def iter_file(file: IOBase, *, chunk_size: int = 4096) -> Iterator[bytes]:
+    """Yields chunks of a file."""
+
+    while chunk := file.read(chunk_size):
+        yield chunk
+
+
+def filestream(file: IOBase, *, chunk_size: int = 4096) -> Response:
+    """Returns a file stream."""
+
+    content_type = mimetype(file)
+    file.seek(0)
+
+    return Response(
+        stream_with_context(iter_file(file, chunk_size=chunk_size)),
+        content_type=content_type
+    )

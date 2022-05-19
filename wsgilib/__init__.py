@@ -4,7 +4,11 @@ from wsgilib.application import Application
 from wsgilib.cors import CORS
 from wsgilib.decorators import require_json
 from wsgilib.exceptions import InvalidData
-from wsgilib.functions import get_bool, get_datetime, get_int, get_range
+from wsgilib.functions import filestream
+from wsgilib.functions import get_bool
+from wsgilib.functions import get_datetime
+from wsgilib.functions import get_int
+from wsgilib.functions import get_range
 from wsgilib.messages import Message, JSONMessage
 from wsgilib.paging import PageInfo, Browser
 from wsgilib.request import ACCEPT
@@ -37,6 +41,7 @@ __all__ = [
     'Browser',
     'Message',
     'JSONMessage',
+    'filestream',
     'get_bool',
     'get_datetime',
     'get_int',
