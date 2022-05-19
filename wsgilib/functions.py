@@ -3,14 +3,12 @@
 from contextlib import suppress
 from datetime import datetime
 from re import search
-from typing import IO, Iterator, Optional
+from typing import Optional
 
-from flask import request, Response, stream_with_context
-
-from mimeutil import mimetype
+from flask import request
 
 
-__all__ = ['get_bool', 'get_datetime', 'get_int', 'get_range', 'filestream']
+__all__ = ['get_bool', 'get_datetime', 'get_int', 'get_range']
 
 
 BOOL_STRINGS = {
@@ -79,22 +77,3 @@ def get_range() -> tuple[int, Optional[int]]:
     start = int(start) if start else 0
     end = int(end) if end else None
     return start, end
-
-
-def iter_file(file: IO, *, chunk_size: int = 4096) -> Iterator[bytes]:
-    """Yields chunks of a file."""
-
-    while chunk := file.read(chunk_size):
-        yield chunk
-
-
-def filestream(file: IO, *, chunk_size: int = 4096) -> Response:
-    """Returns a file stream."""
-
-    content_type = mimetype(file)
-    file.seek(0)
-
-    return Response(
-        stream_with_context(iter_file(file, chunk_size=chunk_size)),
-        content_type=content_type
-    )
