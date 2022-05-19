@@ -40,8 +40,10 @@ def get_bool(key: str, default: bool = False) -> bool:
         raise ValueError('Not a boolean:', key, value) from None
 
 
-def get_datetime(key: str, default: Optional[datetime] = None) \
-        -> Optional[datetime]:
+def get_datetime(
+        key: str,
+        default: Optional[datetime] = None
+) -> Optional[datetime]:
     """Returns a datetime from the request args."""
 
     try:
