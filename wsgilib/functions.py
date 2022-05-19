@@ -2,9 +2,8 @@
 
 from contextlib import suppress
 from datetime import datetime
-from io import IOBase
 from re import search
-from typing import Iterator, Optional
+from typing import IO, Iterator, Optional
 
 from flask import request, Response, stream_with_context
 
@@ -80,14 +79,14 @@ def get_range() -> tuple[int, Optional[int]]:
     return start, end
 
 
-def iter_file(file: IOBase, *, chunk_size: int = 4096) -> Iterator[bytes]:
+def iter_file(file: IO, *, chunk_size: int = 4096) -> Iterator[bytes]:
     """Yields chunks of a file."""
 
     while chunk := file.read(chunk_size):
         yield chunk
 
 
-def filestream(file: IOBase, *, chunk_size: int = 4096) -> Response:
+def filestream(file: IO, *, chunk_size: int = 4096) -> Response:
     """Returns a file stream."""
 
     content_type = mimetype(file)
