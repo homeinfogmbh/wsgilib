@@ -4,9 +4,30 @@ from datetime import datetime, date, time
 from html import escape
 from json import dumps
 from types import GeneratorType
+from typing import Any
 
 
-__all__ = ['htmlescape', 'jsonify']
+__all__ = ['View', 'htmlescape', 'jsonify']
+
+
+class View(dict):
+    """A JSON view.
+    Keys represent attributes to read,
+    values represent optional keys of the JSON object.
+    If the key is false-ish, the view falls back onto the attribute.
+    """
+
+    def __call__(self, model: object) -> dict[str, Any]:
+        """Apply the view to the respective model."""
+        result = {}
+
+        for attribute, key in self.items():
+            if isinstance(key, dict):
+                type(self)(key)(getattr(model, attribute))
+            else:
+                result[key or attribute] = getattr(model, attribute)
+
+        return result
 
 
 def htmlescape(obj: object) -> object:

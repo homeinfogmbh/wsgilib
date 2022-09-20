@@ -8,6 +8,7 @@ from wsgilib.functions import get_bool
 from wsgilib.functions import get_datetime
 from wsgilib.functions import get_int
 from wsgilib.functions import get_range
+from wsgilib.json import View
 from wsgilib.messages import Message, JSONMessage
 from wsgilib.paging import PageInfo, Browser
 from wsgilib.request import ACCEPT
@@ -40,6 +41,7 @@ __all__ = [
     'Browser',
     'Message',
     'JSONMessage',
+    'View',
     'get_bool',
     'get_datetime',
     'get_int',
