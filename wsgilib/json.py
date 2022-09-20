@@ -22,15 +22,16 @@ class View(dict):
         result = {}
 
         for attribute, key in self.items():
+            raw_value = getattr(model, attribute)
+
             if isinstance(key, dict):
                 key = type(self)(key)
 
             if isinstance(key, View):
-                result[key.pop('__json_key__', attribute)] = View(
-                    getattr(model, attribute)
-                )
+                json_key = key.pop('__json_key__', attribute)
+                result[json_key] = key(raw_value)
             else:
-                result[key or attribute] = jsonify(getattr(model, attribute))
+                result[key or attribute] = jsonify(raw_value)
 
         return result
 
