@@ -23,7 +23,9 @@ class View(dict):
 
         for attribute, key in self.items():
             if isinstance(key, dict):
-                type(self)(key)(getattr(model, attribute))
+                result[key.get('__json_key__') or attribute] = type(self)(key)(
+                    getattr(model, attribute)
+                )
             else:
                 result[key or attribute] = getattr(model, attribute)
 
