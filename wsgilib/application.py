@@ -78,7 +78,8 @@ class Application(Flask):
 
         self.add_url_rule(
             route, endpoint, function, methods=methods,
-            strict_slashes=strict_slashes)
+            strict_slashes=strict_slashes
+        )
 
     def add_routes(self, routes: Iterable[RouteType],
                    strict_slashes: bool = False):
