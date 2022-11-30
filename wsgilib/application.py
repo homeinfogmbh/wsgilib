@@ -59,7 +59,7 @@ class Application(Flask):
         return dump_stacktrace()
 
     def _postprocess_response(self, response: Response) -> Response:
-        """Postprocesses the response."""
+        """Post-processes the response."""
         if self.cors is not None:
             self.cors.apply(response.headers)
 
