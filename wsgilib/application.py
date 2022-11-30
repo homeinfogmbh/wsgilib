@@ -9,7 +9,7 @@ from wsgilib.cors import CORS
 from wsgilib.debug import dump_stacktrace
 from wsgilib.responses import Error, Response
 from wsgilib.messages import Message
-from wsgilib.types import CORSType, Route
+from wsgilib.types import CORSType, RouteType
 
 
 __all__ = ['Application']
@@ -65,7 +65,7 @@ class Application(Flask):
 
         return response
 
-    def add_route(self, route: Route, strict_slashes: bool = False):
+    def add_route(self, route: RouteType, strict_slashes: bool = False):
         """Adds the respective route."""
         try:
             methods, route, function, endpoint = route
@@ -80,7 +80,7 @@ class Application(Flask):
             route, endpoint, function, methods=methods,
             strict_slashes=strict_slashes)
 
-    def add_routes(self, routes: Iterable[Route],
+    def add_routes(self, routes: Iterable[RouteType],
                    strict_slashes: bool = False):
         """Adds the respective routes."""
         for route in routes:
