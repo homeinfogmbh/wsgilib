@@ -1,14 +1,14 @@
 """Core application implementation."""
 
 from traceback import format_exc
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Union
 
 from flask import Flask
 
 from wsgilib.cors import CORS
 from wsgilib.debug import dump_stacktrace
 from wsgilib.responses import Error, Response
-from wsgilib.messages import Message
+from wsgilib.messages import JSONMessage, Message
 from wsgilib.types import CORSType, RouteType
 
 
@@ -51,7 +51,10 @@ class Application(Flask):
         """Sets the CORS settings."""
         self._cors = cors
 
-    def _internal_server_error(self, _: Exception) -> Response:
+    def _internal_server_error(
+            self,
+            _: Exception
+    ) -> Union[Response, JSONMessage]:
         """Handles uncaught internal server errors."""
         if self.debug:
             return Error(format_exc(), status=500)
