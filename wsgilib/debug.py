@@ -10,7 +10,7 @@ __all__ = ['dump_stacktrace']
 
 
 def dump_stacktrace() -> JSONMessage:
-    """Dumps a stracktrace of an unexpected exception."""
+    """Dumps a stacktrace of an unexpected exception."""
 
     print('############################ cut here ############################',
           file=stderr)
