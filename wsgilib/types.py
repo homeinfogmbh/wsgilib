@@ -11,7 +11,8 @@ __all__ = [
     'Header',
     'Message',
     'Quality',
-    'Route'
+    'Route',
+    'RouteType'
 ]
 
 
@@ -29,3 +30,14 @@ class Route(NamedTuple):
     route: str
     function: Callable[[Exception], Response]
     endpoint: Optional[str] = None
+
+
+RouteType = Union[
+    Route,
+    tuple[
+        Union[Iterable[str], str],
+        Callable[[Exception], Response],
+        Optional[str]
+    ],
+    tuple[Union[Iterable[str], str], Callable[[Exception], Response]]
+]
