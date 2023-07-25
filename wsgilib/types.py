@@ -5,15 +5,7 @@ from typing import Callable, Iterable, NamedTuple, Optional, Union
 from flask import Response
 
 
-__all__ = [
-    'CORSType',
-    'ETag',
-    'Header',
-    'Message',
-    'Quality',
-    'Route',
-    'RouteType'
-]
+__all__ = ["CORSType", "ETag", "Header", "Message", "Quality", "Route", "RouteType"]
 
 
 CORSType = Union[Callable, dict, bool]
@@ -34,10 +26,6 @@ class Route(NamedTuple):
 
 RouteType = Union[
     Route,
-    tuple[
-        Union[Iterable[str], str],
-        Callable[[Exception], Response],
-        Optional[str]
-    ],
-    tuple[Union[Iterable[str], str], Callable[[Exception], Response]]
+    tuple[Union[Iterable[str], str], Callable[[Exception], Response], Optional[str]],
+    tuple[Union[Iterable[str], str], Callable[[Exception], Response]],
 ]

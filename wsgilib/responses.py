@@ -16,15 +16,15 @@ from wsgilib.types import ETag, Message
 
 
 __all__ = [
-    'Response',
-    'PlainText',
-    'Error',
-    'OK',
-    'HTML',
-    'XML',
-    'JSON',
-    'Binary',
-    'InternalServerError'
+    "Response",
+    "PlainText",
+    "Error",
+    "OK",
+    "HTML",
+    "XML",
+    "JSON",
+    "Binary",
+    "InternalServerError",
 ]
 
 
@@ -35,14 +35,14 @@ class Response(Exception):
     """A WSGI response that can be raised as an exception."""
 
     def __init__(
-            self,
-            msg: Message = '',
-            status: int = 200,
-            *,
-            mimetype: str = 'text/plain',
-            charset: Optional[str] = 'utf-8',
-            encoding: bool = None,
-            headers: dict = None
+        self,
+        msg: Message = "",
+        status: int = 200,
+        *,
+        mimetype: str = "text/plain",
+        charset: Optional[str] = "utf-8",
+        encoding: bool = None,
+        headers: dict = None,
     ):
         super().__init__()
         self.msg = msg
@@ -60,7 +60,7 @@ class Response(Exception):
     def __enter__(self):
         """Returns itself."""
         if not self._exceptions:
-            raise TypeError('Handling context without exceptions to convert.')
+            raise TypeError("Handling context without exceptions to convert.")
 
         return self
 
@@ -87,13 +87,17 @@ class Response(Exception):
         """Returns an appropriate response object."""
         if self.charset is None:
             return Response_(
-                response=self.body, status=self.status, headers=self.headers,
-                mimetype=self.mimetype
+                response=self.body,
+                status=self.status,
+                headers=self.headers,
+                mimetype=self.mimetype,
             )
 
         return Response_(
-            response=self.body, status=self.status, headers=self.headers,
-            content_type=f'{self.mimetype}; charset={self.charset}'
+            response=self.body,
+            status=self.status,
+            headers=self.headers,
+            content_type=f"{self.mimetype}; charset={self.charset}",
         )
 
     def convert(self, *exceptions: Exception) -> Response:
@@ -108,16 +112,20 @@ class PlainText(Response):  # pylint: disable=R0901
     """Returns a successful plain text response."""
 
     def __init__(
-            self,
-            msg: Message = '',
-            status: int = 200,
-            *,
-            charset: str = 'utf-8',
-            headers: dict = None
+        self,
+        msg: Message = "",
+        status: int = 200,
+        *,
+        charset: str = "utf-8",
+        headers: dict = None,
     ):
         super().__init__(
-            msg, status, mimetype='text/plain', charset=charset, encoding=True,
-            headers=headers
+            msg,
+            status,
+            mimetype="text/plain",
+            charset=charset,
+            encoding=True,
+            headers=headers,
         )
 
 
@@ -125,57 +133,61 @@ class Error(Response):
     """An WSGI error message."""
 
     def __init__(
-            self,
-            msg: Message = '',
-            status: int = 400,
-            *,
-            charset: str = 'utf-8',
-            headers: dict = None
+        self,
+        msg: Message = "",
+        status: int = 400,
+        *,
+        charset: str = "utf-8",
+        headers: dict = None,
     ):
         if 400 <= status < 600:
             super().__init__(msg, status, charset=charset, headers=headers)
         else:
-            raise ValueError(f'Not an error status: {status}')
+            raise ValueError(f"Not an error status: {status}")
 
 
 class OK(Response):
     """Returns a successful plain text response."""
 
     def __init__(
-            self,
-            msg: Message = '',
-            status: int = 200,
-            *,
-            charset: str = 'utf-8',
-            headers: dict = None
+        self,
+        msg: Message = "",
+        status: int = 200,
+        *,
+        charset: str = "utf-8",
+        headers: dict = None,
     ):
         if 200 <= status < 300:
             super().__init__(msg, status, charset=charset, headers=headers)
         else:
-            raise ValueError(f'Not a success status: {status}')
+            raise ValueError(f"Not a success status: {status}")
 
 
 class HTML(Response):
     """Returns a successful plain text response."""
 
     def __init__(
-            self,
-            msg: Any = '',
-            status: int = 200,
-            *,
-            charset: str = 'utf-8',
-            headers: dict = None
+        self,
+        msg: Any = "",
+        status: int = 200,
+        *,
+        charset: str = "utf-8",
+        headers: dict = None,
     ):
         try:
-            msg = tostring(msg, encoding=charset, method='html')
+            msg = tostring(msg, encoding=charset, method="html")
         except AttributeError:
             encoding = None
         else:
             encoding = False
 
         super().__init__(
-            msg, status, mimetype='text/html', charset=charset,
-            encoding=encoding, headers=headers
+            msg,
+            status,
+            mimetype="text/html",
+            charset=charset,
+            encoding=encoding,
+            headers=headers,
         )
 
 
@@ -183,18 +195,18 @@ class XML(Response):
     """An XML response."""
 
     def __init__(
-            self,
-            msg: Any,
-            status: int = 200,
-            *,
-            charset: str = 'utf-8',
-            headers: dict = None
+        self,
+        msg: Any,
+        status: int = 200,
+        *,
+        charset: str = "utf-8",
+        headers: dict = None,
     ):
         try:
             msg = msg.toxml(encoding=charset)
         except AttributeError:
             try:
-                msg = tostring(msg, encoding=charset, method='xml')
+                msg = tostring(msg, encoding=charset, method="xml")
             except AttributeError:
                 encoding = None
             else:
@@ -203,8 +215,12 @@ class XML(Response):
             encoding = False
 
         super().__init__(
-            msg, status, mimetype='application/xml', charset=charset,
-            encoding=encoding, headers=headers
+            msg,
+            status,
+            mimetype="application/xml",
+            charset=charset,
+            encoding=encoding,
+            headers=headers,
         )
 
 
@@ -212,20 +228,23 @@ class JSON(Response):
     """A JSON response."""
 
     def __init__(
-            self,
-            json: Any,
-            status: int = 200,
-            *,
-            indent: int = None,
-            headers: dict = None,
-            preprocess: Optional[Callable[[Any], Any]] = htmlescape
+        self,
+        json: Any,
+        status: int = 200,
+        *,
+        indent: int = None,
+        headers: dict = None,
+        preprocess: Optional[Callable[[Any], Any]] = htmlescape,
     ):
         if preprocess is not None:
             json = preprocess(json)
 
         super().__init__(
-            jsonify(json, indent=indent), status, mimetype='application/json',
-            encoding=True, headers=headers
+            jsonify(json, indent=indent),
+            status,
+            mimetype="application/json",
+            encoding=True,
+            headers=headers,
         )
 
 
@@ -233,17 +252,21 @@ class Binary(Response):
     """A binary reply."""
 
     def __init__(
-            self,
-            msg: bytes,
-            status: int = 200,
-            *,
-            etag: ETag = None,
-            filename: str = None,
-            headers: dict = None
+        self,
+        msg: bytes,
+        status: int = 200,
+        *,
+        etag: ETag = None,
+        filename: str = None,
+        headers: dict = None,
     ):
         super().__init__(
-            msg, status, mimetype=get_mimetype(msg), charset=None,
-            encoding=False, headers=headers
+            msg,
+            status,
+            mimetype=get_mimetype(msg),
+            charset=None,
+            encoding=False,
+            headers=headers,
         )
         self.etag = etag
         self.filename = filename
@@ -254,12 +277,12 @@ class Binary(Response):
         if self.response:
             return sha256(self.body).hexdigest()
 
-        raise ValueError('No response available to hash.')
+        raise ValueError("No response available to hash.")
 
     @property
     def etag(self):
         """Returns the e-tag."""
-        return self.headers.get('ETag')
+        return self.headers.get("ETag")
 
     @etag.setter
     def etag(self, etag: Union[None, bool, str]):
@@ -271,17 +294,17 @@ class Binary(Response):
             return
 
         if etag is True:
-            self.headers['ETag'] = self.response_checksum
+            self.headers["ETag"] = self.response_checksum
         elif etag is False:
-            self.headers.pop('ETag', None)
+            self.headers.pop("ETag", None)
         else:
-            self.headers['ETag'] = etag
+            self.headers["ETag"] = etag
 
     @property
     def filename(self):
         """Yields all file names."""
         try:
-            content_disposition = self.headers['Content-Disposition']
+            content_disposition = self.headers["Content-Disposition"]
         except KeyError:
             return None
 
@@ -299,20 +322,20 @@ class Binary(Response):
         any Content-Disposition header field.
         """
         if filename is None:
-            self.headers.pop('Content-Disposition', None)
+            self.headers.pop("Content-Disposition", None)
         else:
             content_disposition = f'attachment; filename="{filename}"'
-            self.headers['Content-Disposition'] = content_disposition
+            self.headers["Content-Disposition"] = content_disposition
 
 
 class InternalServerError(Error):
     """Indicate internal server errors."""
 
     def __init__(
-            self,
-            msg: Message = 'Internal Server Error.',
-            *,
-            charset: str = 'utf-8',
-            headers: dict = None
+        self,
+        msg: Message = "Internal Server Error.",
+        *,
+        charset: str = "utf-8",
+        headers: dict = None,
     ):
         super().__init__(msg, 500, charset=charset, headers=headers)

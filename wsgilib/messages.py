@@ -6,7 +6,7 @@ from typing import Callable
 from wsgilib.responses import JSON
 
 
-__all__ = ['Message', 'JSONMessage']
+__all__ = ["Message", "JSONMessage"]
 
 
 class Message(Exception):
@@ -37,15 +37,14 @@ class JSONMessage(Message):
     @property
     def json(self) -> dict:
         """Returns the JSON dictionary."""
-        return {**self.fields, 'message': self.message}
+        return {**self.fields, "message": self.message}
 
     @property
     def response(self) -> JSON:
         """Returns a JSON response object."""
         return JSON(self.json, status=self.status)
 
-    def update(self, message: str = None, status: int = None,
-               **fields) -> JSONMessage:
+    def update(self, message: str = None, status: int = None, **fields) -> JSONMessage:
         """Updates the extra dictionary fields."""
         fields = {**self.fields, **fields}
         message = self.message if message is None else message

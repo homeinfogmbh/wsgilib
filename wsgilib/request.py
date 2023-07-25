@@ -8,7 +8,7 @@ from werkzeug.local import LocalProxy
 from wsgilib.types import Quality
 
 
-__all__ = ['ACCEPT']
+__all__ = ["ACCEPT"]
 
 
 def split_quality(string: str) -> Quality:
@@ -17,12 +17,12 @@ def split_quality(string: str) -> Quality:
     """
 
     try:
-        string, quality = string.split(';')
+        string, quality = string.split(";")
     except ValueError:
         return (string, 1)
 
     try:
-        _, quality = quality.split('=')
+        _, quality = quality.split("=")
         quality = float(quality)
     except ValueError:
         return (string, 1)
@@ -33,7 +33,7 @@ def split_quality(string: str) -> Quality:
 def split_csv(string: str) -> Iterator[Quality]:
     """Yields the respective elements."""
 
-    for item in string.split(','):
+    for item in string.split(","):
         if item:
             yield split_quality(item)
 
@@ -41,7 +41,7 @@ def split_csv(string: str) -> Iterator[Quality]:
 def get_accept() -> dict[str, float]:
     """Yields accepting types."""
 
-    return dict(split_csv(request.headers.get('Accept', '')))
+    return dict(split_csv(request.headers.get("Accept", "")))
 
 
 ACCEPT = LocalProxy(get_accept)

@@ -6,7 +6,7 @@ from typing import Iterable, Iterator, NamedTuple, Union
 from flask import request
 
 
-__all__ = ['PageInfo', 'Browser']
+__all__ = ["PageInfo", "Browser"]
 
 
 class PageInfo(NamedTuple):
@@ -23,18 +23,24 @@ class PageInfo(NamedTuple):
     def to_json(self):
         """Returns a JSON representation of the page information."""
         return {
-            'fullPages': self.full_pages,
-            'remainder': self.remainder,
-            'pages': self.pages
+            "fullPages": self.full_pages,
+            "remainder": self.remainder,
+            "pages": self.pages,
         }
 
 
 class Browser:
     """Page browser."""
 
-    def __init__(self, *, page_arg: str = 'page', size_arg: str = 'size',
-                 info_arg: str = 'pages', default_page: int = 0,
-                 default_size: int = 10):
+    def __init__(
+        self,
+        *,
+        page_arg: str = "page",
+        size_arg: str = "size",
+        info_arg: str = "pages",
+        default_page: int = 0,
+        default_size: int = 10
+    ):
         """Sets the paging configuration."""
         self.page_arg = page_arg
         self.size_arg = size_arg
@@ -64,9 +70,9 @@ class Browser:
     @property
     def wanted(self) -> bool:
         """Determines if browsing has been requested by URL parameters."""
-        return any([self.page_arg in request.args,
-                    self.size_arg in request.args,
-                    self.info])
+        return any(
+            [self.page_arg in request.args, self.size_arg in request.args, self.info]
+        )
 
     def browse(self, iterable: Iterable) -> Iterator:
         """Pages the respective iterable."""

@@ -1,7 +1,7 @@
 """Common Exceptions:"""
 
 
-__all__ = ['InvalidData']
+__all__ = ["InvalidData"]
 
 
 class InvalidData(Exception):
@@ -14,6 +14,4 @@ class InvalidData(Exception):
 
     def __str__(self):
         """Returns an error message."""
-        return (
-            f'Expected data of type "{self.expected}", '
-            f'but got {self.received}".')
+        return f'Expected data of type "{self.expected}", ' f'but got {self.received}".'

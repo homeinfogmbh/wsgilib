@@ -12,14 +12,15 @@ from wsgilib.messages import JSONMessage, Message
 from wsgilib.types import CORSType, RouteType
 
 
-__all__ = ['Application']
+__all__ = ["Application"]
 
 
 class Application(Flask):
     """Extended web application basis."""
 
-    def __init__(self, *args, cors: Optional[CORSType] = None,
-                 debug: bool = False, **kwargs):
+    def __init__(
+        self, *args, cors: Optional[CORSType] = None, debug: bool = False, **kwargs
+    ):
         """Invokes super constructor and adds exception handlers."""
         super().__init__(*args, **kwargs)
         self.register_error_handler(Response, lambda response: response)
@@ -51,10 +52,7 @@ class Application(Flask):
         """Sets the CORS settings."""
         self._cors = cors
 
-    def _internal_server_error(
-            self,
-            _: Exception
-    ) -> Union[Response, JSONMessage]:
+    def _internal_server_error(self, _: Exception) -> Union[Response, JSONMessage]:
         """Handles uncaught internal server errors."""
         if self.debug:
             return Error(format_exc(), status=500)
@@ -74,18 +72,16 @@ class Application(Flask):
             methods, route, function, endpoint = route
         except ValueError:
             methods, route, function = route
-            endpoint = f'{methods} {route}'
+            endpoint = f"{methods} {route}"
 
         if isinstance(methods, str):
             methods = methods.split()
 
         self.add_url_rule(
-            route, endpoint, function, methods=methods,
-            strict_slashes=strict_slashes
+            route, endpoint, function, methods=methods, strict_slashes=strict_slashes
         )
 
-    def add_routes(self, routes: Iterable[RouteType],
-                   strict_slashes: bool = False):
+    def add_routes(self, routes: Iterable[RouteType], strict_slashes: bool = False):
         """Adds the respective routes."""
         for route in routes:
             self.add_route(route, strict_slashes=strict_slashes)

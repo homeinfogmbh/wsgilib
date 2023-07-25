@@ -7,7 +7,7 @@ from types import GeneratorType
 from typing import Any
 
 
-__all__ = ['View', 'htmlescape', 'jsonify']
+__all__ = ["View", "htmlescape", "jsonify"]
 
 
 class View(dict):
@@ -28,7 +28,7 @@ class View(dict):
                 key = type(self)(key)
 
             if isinstance(key, View):
-                json_key = key.pop('__json_key__', attribute)
+                json_key = key.pop("__json_key__", attribute)
                 result[json_key] = key(raw_value)
             else:
                 result[key or attribute] = jsonify(raw_value)

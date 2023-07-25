@@ -9,11 +9,11 @@ from werkzeug.datastructures import Headers
 from wsgilib.types import Header
 
 
-__all__ = ['NoOriginError', 'UnauthorizedOrigin', 'CORS']
+__all__ = ["NoOriginError", "UnauthorizedOrigin", "CORS"]
 
 
-ANY = '*'
-LOGGER = getLogger('wsgilib.cors')
+ANY = "*"
+LOGGER = getLogger("wsgilib.cors")
 
 
 class NoOriginError(Exception):
@@ -31,7 +31,7 @@ class CORS(dict):
     def allowed_origins(self) -> set[str]:
         """Returns the configured origins, defaulting to '*'."""
         try:
-            return set(self['origins'])
+            return set(self["origins"])
         except KeyError:
             return {ANY}
 
@@ -39,7 +39,7 @@ class CORS(dict):
     def allowed_methods(self) -> list[str]:
         """Yields the allowed CORS methods."""
         try:
-            return self['methods']
+            return self["methods"]
         except KeyError:
             return [ANY]
 
@@ -47,7 +47,7 @@ class CORS(dict):
     def allowed_headers(self) -> list[str]:
         """Yields the to-be-set CORS headers."""
         try:
-            return self['headers']
+            return self["headers"]
         except KeyError:
             return [ANY]
 
@@ -56,11 +56,11 @@ class CORS(dict):
         """Returns the allow origin value."""
         if ANY in self.allowed_origins:
             try:
-                return request.headers['origin']
+                return request.headers["origin"]
             except KeyError:
                 return ANY
 
-        if not (origin := request.headers.get('origin')):
+        if not (origin := request.headers.get("origin")):
             raise NoOriginError()
 
         if origin in self.allowed_origins:
@@ -72,24 +72,24 @@ class CORS(dict):
     def headers(self) -> Iterator[Header]:
         """Yields the CORS headers."""
         try:
-            yield ('Access-Control-Allow-Origin', self.allowed_origin)
+            yield ("Access-Control-Allow-Origin", self.allowed_origin)
         except NoOriginError:
-            LOGGER.warning('Request did not specify any origin.')
+            LOGGER.warning("Request did not specify any origin.")
             return
         except UnauthorizedOrigin:
-            LOGGER.warning('Request from unauthorized origin.')
+            LOGGER.warning("Request from unauthorized origin.")
             return
 
-        if self.get('credentials'):
-            yield ('Access-Control-Allow-Credentials', 'true')
+        if self.get("credentials"):
+            yield ("Access-Control-Allow-Credentials", "true")
 
         for allowed_header in self.allowed_headers:
-            yield ('Access-Control-Allow-Headers', allowed_header)
+            yield ("Access-Control-Allow-Headers", allowed_header)
 
-        for exposed_header in self.get('expose', []):
-            yield ('Access-Control-Expose-Headers', exposed_header)
+        for exposed_header in self.get("expose", []):
+            yield ("Access-Control-Expose-Headers", exposed_header)
 
-        yield ('Access-Control-Allow-Methods', ', '.join(self.allowed_methods))
+        yield ("Access-Control-Allow-Methods", ", ".join(self.allowed_methods))
 
     def apply(self, headers: Headers) -> None:
         """Applies CORS settings to a headers object."""
